@@ -7,3 +7,5 @@ I wanted to use their repo as a template, but I couldn't get it to work with my 
 So, I had a go at creating my own version (but copying their generate code!) and it seems to have worked :D
 
 This year I am using Zig to try and learn the language.
+
+## Created with Zig version 0.11.0
