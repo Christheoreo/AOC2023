@@ -8,12 +8,12 @@ const BitSet = std.DynamicBitSet;
 const util = @import("util.zig");
 const gpa = util.gpa;
 
-const dataPart1 = @embedFile("data/day01-part1.txt");
-const testDataPart1 = @embedFile("data/day01-part1.test.txt");
+const data = @embedFile("data/day01.txt");
+const testData = @embedFile("data/day01.test.txt");
 
 pub fn main() !void {
     const startTime = std.time.nanoTimestamp();
-    const sum = try solvePartOne(dataPart1);
+    const sum = try solvePartOne(data);
     const elapsedTime = std.time.nanoTimestamp() - startTime;
     std.debug.print("Function execution time: {} nanoseconds\n", .{elapsedTime});
 
@@ -74,5 +74,5 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
 }
 
 test "expect solvePart 1 to work" {
-    try std.testing.expect(try solvePartOne(testDataPart1) == 142);
+    try std.testing.expect(try solvePartOne(testData) == 142);
 }
