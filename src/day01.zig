@@ -9,39 +9,161 @@ const util = @import("util.zig");
 const gpa = util.gpa;
 
 const data = @embedFile("data/day01.txt");
+const testData = @embedFile("data/day01.test.txt");
+const testData2 = @embedFile("data/day01.test2.txt");
+const namesWhitelist = [9][]const u8{ "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
+const digitsWhitelist = [10]u8{ 48, 49, 50, 51, 52, 53, 54, 55, 56, 57 };
+
+const NotFoundError = error{ NotFound, Unknown };
 
 pub fn main() !void {
-    std.debug.print("Hello there {s}\n", .{"Chris!"});
+    const startTimePart1 = std.time.nanoTimestamp();
+    const sumPart1 = try solvePartOne(data);
+    const elapsedTimePart1 = std.time.nanoTimestamp() - startTimePart1;
+    const startTimePart2 = std.time.nanoTimestamp();
+    const sumPart2 = try solvePartTwo(data);
+    const elapsedTimePart2 = std.time.nanoTimestamp() - startTimePart2;
+    std.debug.print("Part 1 took: {} nanoseconds\n", .{elapsedTimePart1});
+    std.debug.print("Part 2 took: {} nanoseconds\n", .{elapsedTimePart2});
+
+    std.debug.print("Answer to part 1 is {}\n", .{sumPart1});
+    std.debug.print("Answer to part 2 is {}\n", .{sumPart2});
 }
 
-// Useful stdlib functions
-const tokenize = std.mem.tokenize;
-const split = std.mem.split;
-const indexOf = std.mem.indexOfScalar;
-const indexOfAny = std.mem.indexOfAny;
-const indexOfStr = std.mem.indexOfPosLinear;
-const lastIndexOf = std.mem.lastIndexOfScalar;
-const lastIndexOfAny = std.mem.lastIndexOfAny;
-const lastIndexOfStr = std.mem.lastIndexOfLinear;
-const trim = std.mem.trim;
-const sliceMin = std.mem.min;
-const sliceMax = std.mem.max;
+fn whitelistContainsValue(target: u8) bool {
+    // 0-9 decimal UTF-8 byte values
+    var found = false;
+    for (digitsWhitelist) |element| {
+        if (element == target) {
+            found = true;
+            break;
+        }
+    }
+    return found;
+}
 
-const parseInt = std.fmt.parseInt;
-const parseFloat = std.fmt.parseFloat;
+fn getValueOfName(name: []u8) !u32 {
+    for (namesWhitelist, 0..) |element, index| {
+        if (std.mem.eql([]u8, name, element)) {
+            return index + 1;
+        }
+    }
+    return NotFoundError.NotFound;
+}
 
-const min = std.math.min;
-const min3 = std.math.min3;
-const max = std.math.max;
-const max3 = std.math.max3;
+pub fn solvePartOne(buffer: []const u8) !u32 {
+    var sum: u32 = 0;
+    var lines = std.mem.split(u8, buffer, "\n");
+    while (lines.next()) |line| {
+        var index: usize = 0;
 
-const print = std.debug.print;
-const assert = std.debug.assert;
+        var a: u32 = 0;
+        var b: u32 = 0;
+        // lets find out how many numbers there are.
+        while (index < line.len) : (index += 1) {
+            if (whitelistContainsValue(line[index])) {
+                const x = [1]u8{line[index]};
+                if (a == 0) {
+                    a = try std.fmt.parseInt(u32, &x, 10);
+                    continue;
+                }
+                b = try std.fmt.parseInt(u32, &x, 10);
+            }
+        }
+        switch (b == 0) {
+            true => {
+                a *= 11;
+            },
+            false => {
+                a *= 10;
+            },
+        }
 
-const sort = std.sort.sort;
-const asc = std.sort.asc;
-const desc = std.sort.desc;
+        sum += (a + b);
+    }
 
-// Generated from template/template.zig.
-// Run `zig build generate` to update.
-// Only unmodified days will be updated.
+    return sum;
+}
+
+pub fn solvePartTwo(buffer: []const u8) !u32 {
+    var lines = std.mem.split(u8, buffer, "\n");
+    var sum: u32 = 0;
+    while (lines.next()) |line| {
+        // starting at index 0 , check for a digit
+        // if its not a digit, check if the byte matches the start of a number name E.g. o for one, or t for two,three
+        // if its a match for any, check for potential sub strings.
+        // if its a match - save it
+        // then start the same process but from the back
+        var index: usize = 0;
+        var a: u32 = 0;
+        var aIndex: usize = 0;
+        var b: u32 = 0;
+
+        while (index < line.len) : (index += 1) {
+            if (whitelistContainsValue(line[index])) {
+                const x = [1]u8{line[index]};
+                a = try std.fmt.parseInt(u32, &x, 10);
+                aIndex = index;
+                break;
+            }
+
+            for (namesWhitelist, 0..) |name, nameIndex| {
+                if (index + name.len > line.len - 1) continue;
+                const memory = line[index .. index + name.len];
+
+                if (std.mem.eql(u8, memory, name)) {
+                    var x: u32 = @intCast(nameIndex);
+                    a = x + 1;
+
+                    aIndex = index;
+                    break;
+                }
+            }
+
+            if (a != 0) {
+                break;
+            }
+        }
+
+        index = line.len - 1;
+        while (index >= aIndex) : (index -= 1) {
+            if (whitelistContainsValue(line[index])) {
+                const x = [1]u8{line[index]};
+                b = try std.fmt.parseInt(u32, &x, 10);
+                break;
+            }
+
+            for (namesWhitelist, 0..) |name, nameIndex| {
+                if (index < name.len) continue;
+                const memory = line[(index - (name.len - 1)) .. index + 1];
+                if (std.mem.eql(u8, memory, name)) {
+                    var x: u32 = @intCast(nameIndex);
+                    b = x + 1;
+                    break;
+                }
+            }
+
+            if (b != 0) {
+                break;
+            }
+        }
+        switch (b == 0) {
+            true => {
+                a *= 11;
+            },
+            false => {
+                a *= 10;
+            },
+        }
+
+        sum += (a + b);
+    }
+    return sum;
+}
+test "expect solvePart 1 to work" {
+    try std.testing.expect(try solvePartOne(testData) == 142);
+}
+
+test "expect solvePartTwo to work" {
+    try std.testing.expect(try solvePartTwo(testData2) == 281);
+}
