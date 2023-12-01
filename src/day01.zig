@@ -17,13 +17,17 @@ const digitsWhitelist = [10]u8{ 48, 49, 50, 51, 52, 53, 54, 55, 56, 57 };
 const NotFoundError = error{ NotFound, Unknown };
 
 pub fn main() !void {
-    const startTime = std.time.nanoTimestamp();
-    // const sum = try solvePartOne(data);
-    const sum = try solvePartTwo(data);
-    const elapsedTime = std.time.nanoTimestamp() - startTime;
-    std.debug.print("Function execution time: {} nanoseconds\n", .{elapsedTime});
+    const startTimePart1 = std.time.nanoTimestamp();
+    const sumPart1 = try solvePartOne(data);
+    const elapsedTimePart1 = std.time.nanoTimestamp() - startTimePart1;
+    const startTimePart2 = std.time.nanoTimestamp();
+    const sumPart2 = try solvePartTwo(data);
+    const elapsedTimePart2 = std.time.nanoTimestamp() - startTimePart2;
+    std.debug.print("Part 1 took: {} nanoseconds\n", .{elapsedTimePart1});
+    std.debug.print("Part 2 took: {} nanoseconds\n", .{elapsedTimePart2});
 
-    std.debug.print("Answer is {}\n", .{sum});
+    std.debug.print("Answer to part 1 is {}\n", .{sumPart1});
+    std.debug.print("Answer to part 2 is {}\n", .{sumPart2});
 }
 
 fn whitelistContainsValue(target: u8) bool {
@@ -31,18 +35,6 @@ fn whitelistContainsValue(target: u8) bool {
     var found = false;
     for (digitsWhitelist) |element| {
         if (element == target) {
-            found = true;
-            break;
-        }
-    }
-    return found;
-}
-
-fn whitelistWordsContainsValue(target: []u8) bool {
-    // 0-9 decimal UTF-8 byte values
-    var found = false;
-    for (namesWhitelist) |element| {
-        if (std.mem.eql([]u8, target, element)) {
             found = true;
             break;
         }
@@ -94,7 +86,6 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
 }
 
 pub fn solvePartTwo(buffer: []const u8) !u32 {
-    // std.debug.print("{s}\n", .{buffer});
     var lines = std.mem.split(u8, buffer, "\n");
     var sum: u32 = 0;
     while (lines.next()) |line| {
