@@ -37,12 +37,7 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
     var sum: u32 = 0;
     var lines = std.mem.split(u8, buffer, "\n");
     while (lines.next()) |line| {
-        var firstIndex: u32 = 0;
-        _ = firstIndex;
-        var lastIndex = line.len - 1;
-        _ = lastIndex;
         var index: usize = 0;
-        var numbers: u32 = 0;
 
         var a: u32 = 0;
         var b: u32 = 0;
@@ -57,14 +52,13 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
                 b = try std.fmt.parseInt(u32, &x, 10);
             }
         }
-
-        if (numbers == 1) {
-            // find the number
-        }
-        if (b == 0) {
-            a *= 11;
-        } else {
-            a *= 10;
+        switch (b == 0) {
+            true => {
+                a *= 11;
+            },
+            false => {
+                a *= 10;
+            },
         }
 
         sum += (a + b);
