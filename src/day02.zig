@@ -18,8 +18,8 @@ const Pair = struct { colour: Colours, value: u32 };
 const Set = struct { pairs: []Pair };
 
 pub fn main() !void {
-    const partOneAnswer = try solvePartOne(testData);
-    // const partOneAnswer = try solvePartOne(data);
+    // const partOneAnswer = try solvePartOne(testData);
+    const partOneAnswer = try solvePartOne(data);
 
     std.debug.print("Answer to part 1 = {}\n", .{partOneAnswer});
 }
@@ -27,11 +27,21 @@ pub fn main() !void {
 pub fn solvePartOne(buffer: []const u8) !u32 {
     var sum: u32 = 0;
     var lines = std.mem.split(u8, buffer, "\n");
+    var id: u32 = 0;
     while (lines.next()) |line| {
-        const buf = [1]u8{line[5]};
-        const id = try parseInt(u32, &buf, 10);
+        id += 1;
+        // const buf = [1]u8{line[5]};
+        // const id = try parseInt(u32, &buf, 10);
         // std.debug.print("ID = {}\n", .{id});
-        const setData = line[8..];
+        // const abc = [1]u8{":"};
+        // _ = abc;
+        var indexOfStart = std.mem.indexOfAny(u8, line, ":");
+        var indexA: u32 = @intCast(indexOfStart.?);
+        // std.debug.print("xx = {}\n", .{indexA});
+        // if (id < 10) {
+        //     continue;
+        // }
+        const setData = line[indexA + 2 ..];
         // std.debug.print("set data = {s}\n", .{setData});
         var sets = std.mem.splitAny(u8, setData, ";");
         var shouldAdd: bool = true;
