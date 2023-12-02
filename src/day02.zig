@@ -11,12 +11,6 @@ const gpa = util.gpa;
 const data = @embedFile("data/day02.txt");
 const testData = @embedFile("data/day02.test.txt");
 
-const Colours = enum { blue, green, red };
-
-const Pair = struct { colour: Colours, value: u32 };
-
-const Set = struct { pairs: []Pair };
-
 pub fn main() !void {
     // const partOneAnswer = try solvePartOne(testData);
     const partOneAnswer = try solvePartOne(data);
@@ -30,19 +24,11 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
     var id: u32 = 0;
     while (lines.next()) |line| {
         id += 1;
-        // const buf = [1]u8{line[5]};
-        // const id = try parseInt(u32, &buf, 10);
-        // std.debug.print("ID = {}\n", .{id});
-        // const abc = [1]u8{":"};
-        // _ = abc;
         var indexOfStart = std.mem.indexOfAny(u8, line, ":");
         var indexA: u32 = @intCast(indexOfStart.?);
-        // std.debug.print("xx = {}\n", .{indexA});
-        // if (id < 10) {
-        //     continue;
-        // }
+
         const setData = line[indexA + 2 ..];
-        // std.debug.print("set data = {s}\n", .{setData});
+
         var sets = std.mem.splitAny(u8, setData, ";");
         var shouldAdd: bool = true;
         while (sets.next()) |set| {
@@ -51,23 +37,14 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
             var green: u32 = 0;
 
             var setWithoutSpace = std.mem.trim(u8, set, " ");
-            // std.debug.print("Set = {s}\n", .{setWithoutSpace});
             var rawPairs = std.mem.splitAny(u8, setWithoutSpace, ",");
             while (rawPairs.next()) |rawPair| {
                 var trimmedRawPair = std.mem.trim(u8, rawPair, " ");
                 var pair = std.mem.splitAny(u8, trimmedRawPair, " ");
 
-                // std.debug.print("Pair = {s}\n", .{value});
                 var value = try parseInt(u8, pair.next().?, 10);
                 var colour = pair.next().?;
 
-                // if (colour == Colours.red) {
-                //     red += value;
-                // } else if (colour == Colours.blue) {
-                //     blue += value;
-                // } else if (colour == Colours.green) {
-                //     green += value;
-                // }
                 if (std.mem.eql(u8, colour, "red")) {
                     red += value;
                 } else if (std.mem.eql(u8, colour, "blue")) {
@@ -75,12 +52,8 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
                 } else if (std.mem.eql(u8, colour, "green")) {
                     green += value;
                 }
-                // std.debug.print("Value = {}\n", .{value});
             }
 
-            // if (red <= 12 and green <= 13 or blue <= 14) {
-            //     sum += id;
-            // }
             if (red > 12 or green > 13 or blue > 14) {
                 shouldAdd = false;
                 break;
