@@ -116,6 +116,13 @@ pub fn solvePartTwo(buffer: []const u8) !u32 {
     return sum;
 }
 
+test "Make sure part 1 works with test data" {
+    try std.testing.expect(try solvePartOne(testData) == 8);
+}
+
+test "Make sure part 2 works with test data" {
+    try std.testing.expect(try solvePartTwo(testData) == 2286);
+}
 // Useful stdlib functions
 const tokenize = std.mem.tokenize;
 const split = std.mem.split;
