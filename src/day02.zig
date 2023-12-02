@@ -88,6 +88,7 @@ pub fn solvePartTwo(buffer: []const u8) !u32 {
         var red: u32 = 0;
         var blue: u32 = 0;
         var green: u32 = 0;
+
         while (sets.next()) |set| {
             var setWithoutSpace = std.mem.trim(u8, set, " ");
             var rawPairs = std.mem.splitAny(u8, setWithoutSpace, ",");
@@ -113,7 +114,6 @@ pub fn solvePartTwo(buffer: []const u8) !u32 {
                 }
             }
         }
-        //
 
         sum += (red * green * blue);
     }
