@@ -9,8 +9,79 @@ const util = @import("util.zig");
 const gpa = util.gpa;
 
 const data = @embedFile("data/day02.txt");
+const testData = @embedFile("data/day02.test.txt");
 
-pub fn main() !void {}
+const Colours = enum { blue, green, red };
+
+const Pair = struct { colour: Colours, value: u32 };
+
+const Set = struct { pairs: []Pair };
+
+pub fn main() !void {
+    const partOneAnswer = try solvePartOne(testData);
+    // const partOneAnswer = try solvePartOne(data);
+
+    std.debug.print("Answer to part 1 = {}\n", .{partOneAnswer});
+}
+
+pub fn solvePartOne(buffer: []const u8) !u32 {
+    var sum: u32 = 0;
+    var lines = std.mem.split(u8, buffer, "\n");
+    while (lines.next()) |line| {
+        const buf = [1]u8{line[5]};
+        const id = try parseInt(u32, &buf, 10);
+        // std.debug.print("ID = {}\n", .{id});
+        const setData = line[8..];
+        // std.debug.print("set data = {s}\n", .{setData});
+        var sets = std.mem.splitAny(u8, setData, ";");
+        var shouldAdd: bool = true;
+        while (sets.next()) |set| {
+            var red: u32 = 0;
+            var blue: u32 = 0;
+            var green: u32 = 0;
+
+            var setWithoutSpace = std.mem.trim(u8, set, " ");
+            // std.debug.print("Set = {s}\n", .{setWithoutSpace});
+            var rawPairs = std.mem.splitAny(u8, setWithoutSpace, ",");
+            while (rawPairs.next()) |rawPair| {
+                var trimmedRawPair = std.mem.trim(u8, rawPair, " ");
+                var pair = std.mem.splitAny(u8, trimmedRawPair, " ");
+
+                // std.debug.print("Pair = {s}\n", .{value});
+                var value = try parseInt(u8, pair.next().?, 10);
+                var colour = pair.next().?;
+
+                // if (colour == Colours.red) {
+                //     red += value;
+                // } else if (colour == Colours.blue) {
+                //     blue += value;
+                // } else if (colour == Colours.green) {
+                //     green += value;
+                // }
+                if (std.mem.eql(u8, colour, "red")) {
+                    red += value;
+                } else if (std.mem.eql(u8, colour, "blue")) {
+                    blue += value;
+                } else if (std.mem.eql(u8, colour, "green")) {
+                    green += value;
+                }
+                // std.debug.print("Value = {}\n", .{value});
+            }
+
+            // if (red <= 12 and green <= 13 or blue <= 14) {
+            //     sum += id;
+            // }
+            if (red > 12 or green > 13 or blue > 14) {
+                shouldAdd = false;
+                break;
+            }
+        }
+        if (shouldAdd) {
+            sum += id;
+        }
+    }
+    return sum;
+}
 
 // Useful stdlib functions
 const tokenize = std.mem.tokenize;
