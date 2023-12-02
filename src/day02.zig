@@ -12,12 +12,16 @@ const data = @embedFile("data/day02.txt");
 const testData = @embedFile("data/day02.test.txt");
 
 pub fn main() !void {
-    // const partOneAnswer = try solvePartOne(testData);
-    // const partOneAnswer = try solvePartOne(data);
-    // std.debug.print("Answer to part 1 = {}\n", .{partOneAnswer});
+    var startTimePart = std.time.nanoTimestamp();
+    const partOneAnswer = try solvePartOne(data);
+    var elapsedTimePart = std.time.nanoTimestamp() - startTimePart;
+    std.debug.print("Part 1 took: {} nanoseconds\n", .{elapsedTimePart});
+    std.debug.print("Answer to part 1 = {}\n", .{partOneAnswer});
 
-    // const partTwoAnswer = try solvePartTwo(testData);
+    startTimePart = std.time.nanoTimestamp();
     const partTwoAnswer = try solvePartTwo(data);
+    elapsedTimePart = std.time.nanoTimestamp() - startTimePart;
+    std.debug.print("Part 2 took: {} nanoseconds\n", .{elapsedTimePart});
     std.debug.print("Answer to part 2 = {}\n", .{partTwoAnswer});
 }
 
