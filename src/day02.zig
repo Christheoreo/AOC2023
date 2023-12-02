@@ -13,9 +13,12 @@ const testData = @embedFile("data/day02.test.txt");
 
 pub fn main() !void {
     // const partOneAnswer = try solvePartOne(testData);
-    const partOneAnswer = try solvePartOne(data);
+    // const partOneAnswer = try solvePartOne(data);
+    // std.debug.print("Answer to part 1 = {}\n", .{partOneAnswer});
 
-    std.debug.print("Answer to part 1 = {}\n", .{partOneAnswer});
+    // const partTwoAnswer = try solvePartTwo(testData);
+    const partTwoAnswer = try solvePartTwo(data);
+    std.debug.print("Answer to part 2 = {}\n", .{partTwoAnswer});
 }
 
 pub fn solvePartOne(buffer: []const u8) !u32 {
@@ -62,6 +65,53 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
         if (shouldAdd) {
             sum += id;
         }
+    }
+    return sum;
+}
+
+pub fn solvePartTwo(buffer: []const u8) !u32 {
+    var sum: u32 = 0;
+    var lines = std.mem.split(u8, buffer, "\n");
+    var id: u32 = 0;
+    while (lines.next()) |line| {
+        id += 1;
+        var indexOfStart = std.mem.indexOfAny(u8, line, ":");
+        var indexA: u32 = @intCast(indexOfStart.?);
+
+        const setData = line[indexA + 2 ..];
+
+        var sets = std.mem.splitAny(u8, setData, ";");
+        var red: u32 = 0;
+        var blue: u32 = 0;
+        var green: u32 = 0;
+        while (sets.next()) |set| {
+            var setWithoutSpace = std.mem.trim(u8, set, " ");
+            var rawPairs = std.mem.splitAny(u8, setWithoutSpace, ",");
+            while (rawPairs.next()) |rawPair| {
+                var trimmedRawPair = std.mem.trim(u8, rawPair, " ");
+                var pair = std.mem.splitAny(u8, trimmedRawPair, " ");
+
+                var value = try parseInt(u8, pair.next().?, 10);
+                var colour = pair.next().?;
+
+                if (std.mem.eql(u8, colour, "red")) {
+                    if (value > red) {
+                        red = value;
+                    }
+                } else if (std.mem.eql(u8, colour, "blue")) {
+                    if (value > blue) {
+                        blue = value;
+                    }
+                } else if (std.mem.eql(u8, colour, "green")) {
+                    if (value > green) {
+                        green = value;
+                    }
+                }
+            }
+        }
+        //
+
+        sum += (red * green * blue);
     }
     return sum;
 }
