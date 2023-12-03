@@ -30,6 +30,7 @@ fn solvePartOne(buffer: []const u8) !u32 {
     var sum: u32 = 0;
     var lineIndex: u32 = 0;
 
+    // Loop through and find all the symbols, and add those at our List to compare later
     while (lines.next()) |line| {
         defer lineIndex += 1;
 
@@ -47,6 +48,10 @@ fn solvePartOne(buffer: []const u8) !u32 {
     lines = std.mem.split(u8, buffer, "\n");
     lineIndex = 0;
 
+    // Loop over lines again
+    // Find numbers
+    // Clarrify they are next to a symbol from earlier
+    // then add the sums
     while (lines.next()) |line| {
         defer lineIndex += 1;
 
