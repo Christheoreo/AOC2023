@@ -12,7 +12,6 @@ const data = @embedFile("data/day03.txt");
 const testData = @embedFile("data/day03.test.txt");
 const digitsWhitelist = [10]u8{ 48, 49, 50, 51, 52, 53, 54, 55, 56, 57 };
 const fullStop: u8 = 46;
-const fullStopArr = [1]u8{46};
 
 pub fn main() !void {
     // const partOneAnswer = try solvePartOne(testData);
@@ -25,16 +24,17 @@ fn solvePartOne(buffer: []const u8) !u32 {
     const allocator = std.heap.page_allocator;
     var list = std.ArrayList(@Vector(2, u32)).init(allocator);
     defer list.deinit();
-    // var symbolLocations: []@Vector(2, u32) = undefined;
+
     var lines = std.mem.split(u8, buffer, "\n");
+
     var sum: u32 = 0;
     var lineIndex: u32 = 0;
+
     while (lines.next()) |line| {
         defer lineIndex += 1;
+
         var byteIndex: u32 = 0;
         while (byteIndex < line.len) : (byteIndex += 1) {
-            // const char = [1]u8{line[byteIndex]};
-            // if (std.mem.eql(u8, &char, &fullStopArr)) {
             const char: u8 = line[byteIndex];
             if (char != fullStop and !byteIsANumber(char)) {
                 const newValue: @Vector(2, u32) = .{ lineIndex, byteIndex };
@@ -43,33 +43,38 @@ fn solvePartOne(buffer: []const u8) !u32 {
         }
     }
 
+    // reset lines.
     lines = std.mem.split(u8, buffer, "\n");
-
-    // std.debug.print("items {any}", .{list.items});
     lineIndex = 0;
+
     while (lines.next()) |line| {
-        // std.debug.print("Line {s}\n", .{line});
         defer lineIndex += 1;
+
         var byteIndex: u32 = 0;
         while (byteIndex < line.len) {
             var char: u8 = line[byteIndex];
             var number: u32 = 0;
             var isGood: bool = false;
+
             if (byteIsANumber(char)) {
+                // if true, its only one number we are looking at
                 if (byteIndex + 1 >= line.len) {
-                    // this is it
                     const x = [1]u8{char};
                     number = try parseInt(u32, &x, 10);
                     byteIndex += 1;
                 } else {
+                    // we need to get the whole number - keep going right until we hit a full stop or a symbol
                     // now check if the byte next to it is a number
                     var localByteIndex: u32 = byteIndex + 1;
                     var numbersAsBytes = std.ArrayList(u8).init(allocator);
                     defer numbersAsBytes.deinit();
+
                     try numbersAsBytes.append(line[byteIndex]);
+
                     if (numberHasAdjacentSymbol(.{ lineIndex, byteIndex }, list.items)) {
                         isGood = true;
                     }
+
                     while (localByteIndex < line.len) : (localByteIndex += 1) {
                         if (!byteIsANumber(line[localByteIndex])) {
                             break;
@@ -83,14 +88,12 @@ fn solvePartOne(buffer: []const u8) !u32 {
                     number = try parseInt(u32, numbersAsBytes.items, 10);
                     byteIndex = localByteIndex;
                 }
-                // std.debug.print("Number = {}\n", .{number});
             } else {
                 byteIndex += 1;
             }
 
             if (isGood) {
                 sum += number;
-                std.debug.print("Number {} is good!\n", .{number});
             }
         }
     }
@@ -112,11 +115,6 @@ fn byteIsANumber(target: u8) bool {
 
 fn numberHasAdjacentSymbol(vec: @Vector(2, u32), symbols: []@Vector(2, u32)) bool {
     for (symbols) |element| {
-        // std.debug.print("element = {any} and vec = {}\n", .{ element, vec });
-        // if (element[0] == vec[0] and element[1] == vec[1]) {
-        //     return true;
-        // }
-
         if (vec[0] > 0) {
             // Directly above
             if (element[0] == vec[0] - 1 and element[1] == vec[1]) {
