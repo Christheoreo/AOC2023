@@ -156,11 +156,10 @@ fn numberHasAdjacentSymbol(vec: @Vector(2, u32), symbols: []@Vector(2, u32)) boo
             if (element[0] == vec[0] and element[1] == vec[1] - 1) {
                 return true;
             }
-
-            // right
-            if (element[0] == vec[0] and element[1] == vec[1] + 1) {
-                return true;
-            }
+        }
+        // right
+        if (element[0] == vec[0] and element[1] == vec[1] + 1) {
+            return true;
         }
     }
     return false;
