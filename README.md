@@ -9,3 +9,11 @@ So, I had a go at creating my own version (but copying their generate code!) and
 This year I am using Zig to try and learn the language.
 
 ## Created with Zig version 0.11.0
+
+To run a specific day
+
+`zig build run-dayx`
+
+E.g.
+
+`zig build run-day01`
