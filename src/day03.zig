@@ -10,26 +10,26 @@ const gpa = util.gpa;
 
 const data = @embedFile("data/day03.txt");
 const testData = @embedFile("data/day03.test.txt");
-const testDataDad = @embedFile("data/day03.dad.txt");
 const digitsWhitelist = [10]u8{ 48, 49, 50, 51, 52, 53, 54, 55, 56, 57 };
 const fullStop: u8 = 46;
 const asteriks: u8 = 42;
 
-// const Value = struct { lineIndex: u32, byteIndex: u32, rawvalue: u32 };
-// const Value = struct { coOrdinates: @Vector(2, u32), rawvalue: u32 };
-// const Value = struct { coOrdinates: []@Vector(2, u32), rawvalue: u32 };
 const Value = struct { startCoOrdinates: @Vector(2, u32), endCoOrdinates: @Vector(2, u32), rawvalue: u32 };
 
 pub fn main() !void {
-    // const partOneAnswer = try solvePartOne(testDataDad);
-    // // const partOneAnswer = try solvePartOne(data);
+    var startTimePart = std.time.nanoTimestamp();
+    const partOneAnswer = try solvePartOne(data);
+    var elapsedTimePart = std.time.nanoTimestamp() - startTimePart;
+    std.debug.print("Part 1 took: {} nanoseconds\n", .{elapsedTimePart});
 
-    // std.debug.print("Answer to part one is {}\n", .{partOneAnswer});
+    std.debug.print("Answer to part one is {}\n", .{partOneAnswer});
 
-    // const partTwoAnswer = try solvePartTwo(testData);
+    startTimePart = std.time.nanoTimestamp();
     const partTwoAnswer = try solvePartTwo(data);
+    elapsedTimePart = std.time.nanoTimestamp() - startTimePart;
 
-    std.debug.print("Answer to part two is {}\n", .{partTwoAnswer});
+    std.debug.print("Part 2 took: {} nanoseconds\n", .{elapsedTimePart});
+    std.debug.print("Answer to part 2 = {}\n", .{partTwoAnswer});
 }
 
 fn solvePartOne(buffer: []const u8) !u32 {
@@ -75,43 +75,37 @@ fn solvePartOne(buffer: []const u8) !u32 {
 
             if (byteIsANumber(char)) {
                 // if true, its only one number we are looking at
-                if (byteIndex + 1 >= line.len) {
-                    const x = [1]u8{char};
-                    number = try parseInt(u32, &x, 10);
-                    byteIndex += 1;
-                } else {
-                    // we need to get the whole number - keep going right until we hit a full stop or a symbol
-                    // now check if the byte next to it is a number
-                    var localByteIndex: u32 = byteIndex + 1;
-                    var numbersAsBytes = std.ArrayList(u8).init(allocator);
-                    defer numbersAsBytes.deinit();
+                // not a single solo number that starts at the end of the line - so not checking thatr situation
+                // we need to get the whole number - keep going right until we hit a full stop or a symbol
+                // now check if the byte next to it is a number
+                var localByteIndex: u32 = byteIndex + 1;
+                var numbersAsBytes = std.ArrayList(u8).init(allocator);
+                defer numbersAsBytes.deinit();
 
-                    try numbersAsBytes.append(line[byteIndex]);
+                try numbersAsBytes.append(line[byteIndex]);
 
-                    if (numberHasAdjacentSymbol(.{ lineIndex, byteIndex }, list.items)) {
+                if (numberHasAdjacentSymbol(.{ lineIndex, byteIndex }, list.items)) {
+                    isGood = true;
+                }
+
+                while (localByteIndex < line.len) : (localByteIndex += 1) {
+                    if (!byteIsANumber(line[localByteIndex])) {
+                        break;
+                    }
+                    try numbersAsBytes.append(line[localByteIndex]);
+                    if (!isGood and numberHasAdjacentSymbol(.{ lineIndex, localByteIndex }, list.items)) {
                         isGood = true;
                     }
-
-                    while (localByteIndex < line.len) : (localByteIndex += 1) {
-                        if (!byteIsANumber(line[localByteIndex])) {
-                            break;
-                        }
-                        try numbersAsBytes.append(line[localByteIndex]);
-                        if (!isGood and numberHasAdjacentSymbol(.{ lineIndex, localByteIndex }, list.items)) {
-                            isGood = true;
-                        }
-                    }
-
-                    number = try parseInt(u32, numbersAsBytes.items, 10);
-                    byteIndex = localByteIndex;
                 }
+
+                number = try parseInt(u32, numbersAsBytes.items, 10);
+                byteIndex = localByteIndex;
             } else {
                 byteIndex += 1;
             }
 
             if (isGood) {
                 sum += number;
-                std.debug.print("{} is a valid value\n", .{number});
             }
         }
     }
@@ -150,10 +144,6 @@ fn solvePartTwo(buffer: []const u8) !u64 {
     lines = std.mem.split(u8, buffer, "\n");
     lineIndex = 0;
 
-    // Loop over lines again
-    // Find numbers
-    // Clarrify they are next to a symbol from earlier
-    // then add the sums
     while (lines.next()) |line| {
         defer lineIndex += 1;
 
@@ -194,16 +184,6 @@ fn solvePartTwo(buffer: []const u8) !u64 {
 
     }
     var x: usize = 0;
-
-    // while (x < list.items.len) : (x += 1) {
-    //     std.debug.print("item = {}\n", .{list.items[x]});
-    // }
-
-    // x = 0;
-    // while (x < numberList.items.len) : (x += 1) {
-    //     std.debug.print("number = {}\n", .{numberList.items[x].rawvalue});
-    // }
-    // x = 0;
     while (x < list.items.len) : (x += 1) {
         // so now we need to create a list of potential combinations that we need to check
         var item: @Vector(2, u32) = list.items[x];
@@ -223,9 +203,6 @@ fn solvePartTwo(buffer: []const u8) !u64 {
                 inReach = true;
             }
 
-            // if (numberValue.rawvalue == 755 and x > 1 and !inReach) {
-            //     std.debug.print("not in reach - diff = {}", .{diff});
-            // }
             if (!inReach) continue;
 
             // now we need to see if its inrtage from a horizontal point of view.
@@ -241,14 +218,11 @@ fn solvePartTwo(buffer: []const u8) !u64 {
             }
 
             if (!inReachHorizontally) {
-                // if (numberValue.rawvalue == 755 and x > 1) {
-                //     std.debug.print("not in H-reach - diff = {}", .{startCByteIndex - symbolByteIndex});
-                // }
                 continue;
             }
 
             // so here we know that is is in reach, lets set this to a or b and increment the count
-            // std.debug.print("raw value = {} with count = {} \n", .{ numberValue.rawvalue, count });
+
             switch (count) {
                 0 => {
                     a = numberValue.rawvalue;
@@ -260,22 +234,11 @@ fn solvePartTwo(buffer: []const u8) !u64 {
                     //
                 },
             }
-            // if (x > 1) {
-            //     std.debug.print(" raw val = {} start = {} end = {} count = {}, a = {} and b = {}\n", .{ numberValue.rawvalue, numberValue.startCoOrdinates, numberValue.endCoOrdinates, count, a, b });
-            // }
-            // if (count == 0) {
-            //     a = numberValue.rawvalue;
-            // } else {
-            //     b = numberValue.rawvalue;
-            // }
             count += 1;
         }
 
         if (count != 2) continue;
-
-        // std.debug.print("A = {} and B = {} to make {}\n", .{ a, b, a * b });
-        var total: u64 = a * b;
-        sum += total;
+        sum += a * b;
     }
 
     return sum;
@@ -345,6 +308,10 @@ fn numberHasAdjacentSymbol(vec: @Vector(2, u32), symbols: []@Vector(2, u32)) boo
 
 test "part 1 should solve" {
     try std.testing.expect(try solvePartOne(testData) == 4361);
+}
+
+test "part 2 should solve" {
+    try std.testing.expect(try solvePartTwo(testData) == 467835);
 }
 
 // Useful stdlib functions
