@@ -10,14 +10,26 @@ const gpa = util.gpa;
 
 const data = @embedFile("data/day03.txt");
 const testData = @embedFile("data/day03.test.txt");
+const testDataDad = @embedFile("data/day03.dad.txt");
 const digitsWhitelist = [10]u8{ 48, 49, 50, 51, 52, 53, 54, 55, 56, 57 };
 const fullStop: u8 = 46;
+const asteriks: u8 = 42;
+
+// const Value = struct { lineIndex: u32, byteIndex: u32, rawvalue: u32 };
+// const Value = struct { coOrdinates: @Vector(2, u32), rawvalue: u32 };
+// const Value = struct { coOrdinates: []@Vector(2, u32), rawvalue: u32 };
+const Value = struct { startCoOrdinates: @Vector(2, u32), endCoOrdinates: @Vector(2, u32), rawvalue: u32 };
 
 pub fn main() !void {
-    // const partOneAnswer = try solvePartOne(testData);
-    const partOneAnswer = try solvePartOne(data);
+    // const partOneAnswer = try solvePartOne(testDataDad);
+    // // const partOneAnswer = try solvePartOne(data);
 
-    std.debug.print("Answer to part one is {}\n", .{partOneAnswer});
+    // std.debug.print("Answer to part one is {}\n", .{partOneAnswer});
+
+    // const partTwoAnswer = try solvePartTwo(testData);
+    const partTwoAnswer = try solvePartTwo(data);
+
+    std.debug.print("Answer to part two is {}\n", .{partTwoAnswer});
 }
 
 fn solvePartOne(buffer: []const u8) !u32 {
@@ -99,8 +111,171 @@ fn solvePartOne(buffer: []const u8) !u32 {
 
             if (isGood) {
                 sum += number;
+                std.debug.print("{} is a valid value\n", .{number});
             }
         }
+    }
+
+    return sum;
+}
+
+fn solvePartTwo(buffer: []const u8) !u64 {
+    const allocator = std.heap.page_allocator;
+    var list = std.ArrayList(@Vector(2, u32)).init(allocator);
+    defer list.deinit();
+
+    var numberList = std.ArrayList(Value).init(allocator);
+    defer numberList.deinit();
+
+    var lines = std.mem.split(u8, buffer, "\n");
+
+    var sum: u64 = 0;
+    var lineIndex: u32 = 0;
+
+    // Loop through and find all the * symbols, and add those at our List to compare later
+    while (lines.next()) |line| {
+        defer lineIndex += 1;
+
+        var byteIndex: u32 = 0;
+        while (byteIndex < line.len) : (byteIndex += 1) {
+            const char: u8 = line[byteIndex];
+            if (char == asteriks) {
+                const newValue: @Vector(2, u32) = .{ lineIndex, byteIndex };
+                try list.append(newValue);
+            }
+        }
+    }
+
+    // reset lines.
+    lines = std.mem.split(u8, buffer, "\n");
+    lineIndex = 0;
+
+    // Loop over lines again
+    // Find numbers
+    // Clarrify they are next to a symbol from earlier
+    // then add the sums
+    while (lines.next()) |line| {
+        defer lineIndex += 1;
+
+        var byteIndex: u32 = 0;
+        while (byteIndex < line.len) {
+            var char: u8 = line[byteIndex];
+            var number: u32 = 0;
+
+            if (byteIsANumber(char)) {
+
+                // we need to get the whole number - keep going right until we hit a full stop or a symbol
+                // now check if the byte next to it is a number
+                var localByteIndex: u32 = byteIndex + 1;
+                var numbersAsBytes = std.ArrayList(u8).init(allocator);
+                // var value = Value{ . };
+                defer numbersAsBytes.deinit();
+
+                try numbersAsBytes.append(line[byteIndex]);
+                var lastFoundIndex: u32 = byteIndex;
+
+                while (localByteIndex < line.len) : (localByteIndex += 1) {
+                    if (!byteIsANumber(line[localByteIndex])) {
+                        break;
+                    }
+                    try numbersAsBytes.append(line[localByteIndex]);
+                    lastFoundIndex = localByteIndex;
+                }
+
+                number = try parseInt(u32, numbersAsBytes.items, 10);
+                try numberList.append(Value{ .startCoOrdinates = .{ lineIndex, byteIndex }, .endCoOrdinates = .{ lineIndex, lastFoundIndex }, .rawvalue = number });
+                byteIndex = localByteIndex;
+            } else {
+                byteIndex += 1;
+            }
+        }
+
+        // now we check to see if any nuymbers match the criteria
+
+    }
+    var x: usize = 0;
+
+    // while (x < list.items.len) : (x += 1) {
+    //     std.debug.print("item = {}\n", .{list.items[x]});
+    // }
+
+    // x = 0;
+    // while (x < numberList.items.len) : (x += 1) {
+    //     std.debug.print("number = {}\n", .{numberList.items[x].rawvalue});
+    // }
+    // x = 0;
+    while (x < list.items.len) : (x += 1) {
+        // so now we need to create a list of potential combinations that we need to check
+        var item: @Vector(2, u32) = list.items[x];
+        var count: u32 = 0;
+        var y: usize = 0;
+        var a: u32 = 0;
+        var b: u32 = 0;
+        while (y < numberList.items.len) : (y += 1) {
+            if (count > 2) break;
+            var numberValue: Value = numberList.items[y];
+
+            var startCLineIndex: i32 = @intCast(numberValue.startCoOrdinates[0]);
+            var symbolLineIndex: i32 = @intCast(item[0]);
+            var diff: i32 = startCLineIndex - symbolLineIndex;
+            var inReach: bool = false;
+            if (diff == 0 or diff == -1 or diff == 1) {
+                inReach = true;
+            }
+
+            // if (numberValue.rawvalue == 755 and x > 1 and !inReach) {
+            //     std.debug.print("not in reach - diff = {}", .{diff});
+            // }
+            if (!inReach) continue;
+
+            // now we need to see if its inrtage from a horizontal point of view.
+            var startCByteIndex: i32 = @intCast(numberValue.startCoOrdinates[1]);
+            var inReachHorizontally: bool = false;
+            var symbolByteIndex: i32 = @intCast(item[1]);
+            while (startCByteIndex <= numberValue.endCoOrdinates[1]) : (startCByteIndex += 1) {
+                var horrizontalDiff: i32 = startCByteIndex - symbolByteIndex;
+
+                if (horrizontalDiff == 0 or horrizontalDiff == -1 or horrizontalDiff == 1) {
+                    inReachHorizontally = true;
+                }
+            }
+
+            if (!inReachHorizontally) {
+                // if (numberValue.rawvalue == 755 and x > 1) {
+                //     std.debug.print("not in H-reach - diff = {}", .{startCByteIndex - symbolByteIndex});
+                // }
+                continue;
+            }
+
+            // so here we know that is is in reach, lets set this to a or b and increment the count
+            // std.debug.print("raw value = {} with count = {} \n", .{ numberValue.rawvalue, count });
+            switch (count) {
+                0 => {
+                    a = numberValue.rawvalue;
+                },
+                1 => {
+                    b = numberValue.rawvalue;
+                },
+                else => {
+                    //
+                },
+            }
+            // if (x > 1) {
+            //     std.debug.print(" raw val = {} start = {} end = {} count = {}, a = {} and b = {}\n", .{ numberValue.rawvalue, numberValue.startCoOrdinates, numberValue.endCoOrdinates, count, a, b });
+            // }
+            // if (count == 0) {
+            //     a = numberValue.rawvalue;
+            // } else {
+            //     b = numberValue.rawvalue;
+            // }
+            count += 1;
+        }
+
+        if (count != 2) continue;
+
+        // std.debug.print("A = {} and B = {} to make {}\n", .{ a, b, a * b });
+        var total: u64 = a * b;
+        sum += total;
     }
 
     return sum;
