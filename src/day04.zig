@@ -133,6 +133,15 @@ pub fn solvePartTwo(buffer: []const u8) !u32 {
     }
     return answer;
 }
+
+test "part 1 should solve" {
+    try std.testing.expect(try solvePartOne(testData) == 13);
+}
+
+test "part 2 should solve" {
+    try std.testing.expect(try solvePartTwo(testData) == 30);
+}
+
 // Useful stdlib functions
 const tokenize = std.mem.tokenize;
 const split = std.mem.split;
