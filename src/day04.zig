@@ -97,21 +97,11 @@ pub fn solvePartTwo(buffer: []const u8) !u32 {
         rowBuffer[rowIndex] = 1;
     }
 
-    // for (rowBuffer) |row| {
-    //     std.debug.print("Row = {}\n", .{row});
-    // }
-
-    // if (answer == 0) return 1;
-
     var lineIndex: u16 = 0;
     while (lines.next()) |line| {
         defer lineIndex += 1;
 
         var amountOfThisScratchCard: u32 = rowBuffer[lineIndex];
-        // var loopCount: u32 = 0;
-
-        // while (loopCount <= amountOfThisScratchCard) : (loopCount += 1) {
-        // std.debug.print("Line = {s}\n", .{line});
         const colon = [1]u8{':'};
         const indexOfColon = std.mem.indexOfAny(u8, line, &colon).?;
         var content = line[indexOfColon..];
@@ -133,37 +123,15 @@ pub fn solvePartTwo(buffer: []const u8) !u32 {
             while (yourCharsIterator.next()) |yourDigitsAsBytes| {
                 if (std.mem.eql(u8, yourDigitsAsBytes, &space) or yourDigitsAsBytes.len == 0) continue;
                 if (std.mem.eql(u8, digitsAsBytes, yourDigitsAsBytes)) {
-                    // std.debug.print("Found '{s}' in {s}\n", .{ digitsAsBytes, yourDigitsAsBytes });
                     scratchCardsWon += 1;
                 }
             }
         }
 
         var i: u32 = 1;
-        std.debug.print("Line index {} Won {} copies\n", .{ lineIndex, scratchCardsWon });
         while (i <= scratchCardsWon and lineIndex + i < rowBuffer.len) : (i += 1) {
             rowBuffer[lineIndex + i] += amountOfThisScratchCard;
         }
-
-        for (rowBuffer, 0..) |row, ri| {
-            std.debug.print("After line {} Row index {} = {}\n", .{ lineIndex, ri, row });
-        }
-
-        // answer += scratchCardsWon * amountOfThisScratchCard;
-        // }
-
-        // sum
-        // if (lineIndex + scratchCardsWon < lines.len) {
-        //     if (buffer[lineIndex] != 0) {
-        //         answer += scratchCardsWon * buffer[lineIndex];
-        //     }
-        //     // now add one to each index
-        //     var i: u32 = 0;
-        //     while (i < scratchCardsWon) : (i += 1) {
-        //         buffer[i] += 1;
-        //     }
-        // }
-        // if (lineIndex != lines.len - 1) {}
     }
     for (rowBuffer) |row| {
         answer += row;
