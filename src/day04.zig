@@ -13,15 +13,22 @@ const testData = @embedFile("data/day04.test.txt");
 
 pub fn main() !void {
     var startTimePart = std.time.nanoTimestamp();
-    // var partOneAnswer = try solvePartOne(testData);
     var partOneAnswer = try solvePartOne(data);
     var elapsedTimePart: i128 = std.time.nanoTimestamp() - startTimePart;
     const oneMil: f128 = 1_000_000;
     var floatingPoint: f128 = @floatFromInt(elapsedTimePart);
-    const mili: f128 = floatingPoint / oneMil;
+    var mili: f128 = floatingPoint / oneMil;
     std.debug.print("Part 1 took: {} nanoseconds and {} miliseconds\n", .{ elapsedTimePart, mili });
-
     std.debug.print("Answer to part one is {}\n", .{partOneAnswer});
+
+    startTimePart = std.time.nanoTimestamp();
+    const partTwoAnswer = try solvePartTwo(data);
+    elapsedTimePart = std.time.nanoTimestamp() - startTimePart;
+
+    floatingPoint = @floatFromInt(elapsedTimePart);
+    mili = floatingPoint / oneMil;
+    std.debug.print("Part 2 took: {} nanoseconds and {} miliseconds\n", .{ elapsedTimePart, mili });
+    std.debug.print("Answer to part two is {}\n", .{partTwoAnswer});
 }
 
 pub fn solvePartOne(buffer: []const u8) !u32 {
@@ -52,7 +59,7 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
             while (yourCharsIterator.next()) |yourDigitsAsBytes| {
                 if (std.mem.eql(u8, yourDigitsAsBytes, &space) or yourDigitsAsBytes.len == 0) continue;
                 if (std.mem.eql(u8, digitsAsBytes, yourDigitsAsBytes)) {
-                    std.debug.print("Found '{s}' in {s}\n", .{ digitsAsBytes, yourDigitsAsBytes });
+                    // std.debug.print("Found '{s}' in {s}\n", .{ digitsAsBytes, yourDigitsAsBytes });
                     switch (sum) {
                         0 => {
                             sum = 1;
@@ -69,6 +76,98 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
         answer += sum;
     }
     //
+    return answer;
+}
+
+pub fn solvePartTwo(buffer: []const u8) !u32 {
+    var lines = std.mem.split(u8, buffer, "\n");
+    var answer: u32 = 0;
+    var allocator = std.heap.page_allocator;
+    var rowCount: u32 = 0;
+    while (lines.next()) |_| {
+        rowCount += 1;
+    }
+    lines = std.mem.split(u8, buffer, "\n");
+    const rowBuffer = try allocator.alloc(u32, rowCount);
+    defer allocator.free(rowBuffer);
+
+    var rowIndex: u32 = 0;
+
+    while (rowIndex < rowCount) : (rowIndex += 1) {
+        rowBuffer[rowIndex] = 1;
+    }
+
+    // for (rowBuffer) |row| {
+    //     std.debug.print("Row = {}\n", .{row});
+    // }
+
+    // if (answer == 0) return 1;
+
+    var lineIndex: u16 = 0;
+    while (lines.next()) |line| {
+        defer lineIndex += 1;
+
+        var amountOfThisScratchCard: u32 = rowBuffer[lineIndex];
+        // var loopCount: u32 = 0;
+
+        // while (loopCount <= amountOfThisScratchCard) : (loopCount += 1) {
+        // std.debug.print("Line = {s}\n", .{line});
+        const colon = [1]u8{':'};
+        const indexOfColon = std.mem.indexOfAny(u8, line, &colon).?;
+        var content = line[indexOfColon..];
+        const splitter = [1]u8{'|'};
+        const space = [1]u8{' '};
+
+        const indexOfSplitter = std.mem.indexOfAny(u8, content, &splitter).?;
+
+        var winningNumbers = content[2 .. indexOfSplitter - 1];
+        winningNumbers = std.mem.trim(u8, winningNumbers, &space);
+        var yourNumbers = content[indexOfSplitter + 2 ..];
+        var winningCharsIterator = split(u8, winningNumbers, &space);
+        var yourCharsIterator = split(u8, yourNumbers, &space);
+
+        var scratchCardsWon: u32 = 0;
+        while (winningCharsIterator.next()) |digitsAsBytes| {
+            if (std.mem.eql(u8, digitsAsBytes, &space) or digitsAsBytes.len == 0) continue;
+            yourCharsIterator = split(u8, yourNumbers, &space);
+            while (yourCharsIterator.next()) |yourDigitsAsBytes| {
+                if (std.mem.eql(u8, yourDigitsAsBytes, &space) or yourDigitsAsBytes.len == 0) continue;
+                if (std.mem.eql(u8, digitsAsBytes, yourDigitsAsBytes)) {
+                    // std.debug.print("Found '{s}' in {s}\n", .{ digitsAsBytes, yourDigitsAsBytes });
+                    scratchCardsWon += 1;
+                }
+            }
+        }
+
+        var i: u32 = 1;
+        std.debug.print("Line index {} Won {} copies\n", .{ lineIndex, scratchCardsWon });
+        while (i <= scratchCardsWon and lineIndex + i < rowBuffer.len) : (i += 1) {
+            rowBuffer[lineIndex + i] += amountOfThisScratchCard;
+        }
+
+        for (rowBuffer, 0..) |row, ri| {
+            std.debug.print("After line {} Row index {} = {}\n", .{ lineIndex, ri, row });
+        }
+
+        // answer += scratchCardsWon * amountOfThisScratchCard;
+        // }
+
+        // sum
+        // if (lineIndex + scratchCardsWon < lines.len) {
+        //     if (buffer[lineIndex] != 0) {
+        //         answer += scratchCardsWon * buffer[lineIndex];
+        //     }
+        //     // now add one to each index
+        //     var i: u32 = 0;
+        //     while (i < scratchCardsWon) : (i += 1) {
+        //         buffer[i] += 1;
+        //     }
+        // }
+        // if (lineIndex != lines.len - 1) {}
+    }
+    for (rowBuffer) |row| {
+        answer += row;
+    }
     return answer;
 }
 // Useful stdlib functions
