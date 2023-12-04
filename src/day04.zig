@@ -57,7 +57,6 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
             while (yourCharsIterator.next()) |yourDigitsAsBytes| {
                 if (std.mem.eql(u8, yourDigitsAsBytes, &space) or yourDigitsAsBytes.len == 0) continue;
                 if (std.mem.eql(u8, digitsAsBytes, yourDigitsAsBytes)) {
-                    // std.debug.print("Found '{s}' in {s}\n", .{ digitsAsBytes, yourDigitsAsBytes });
                     switch (sum) {
                         0 => {
                             sum = 1;
