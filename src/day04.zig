@@ -44,24 +44,12 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
         var yourNumbers = content[indexOfSplitter + 2 ..];
         var winningCharsIterator = split(u8, winningNumbers, &space);
         var yourCharsIterator = split(u8, yourNumbers, &space);
-        // var yourChars = split(u8, yourNumbers, &space).buffer;
 
         var sum: u32 = 0;
-
-        // std.debug.print("Index is as {}\n", .{indexOfColon});
-        // std.debug.print("Winning is:{s}\n", .{winningNumbers});
-        // std.debug.print("Yours is:{s}\n", .{yourNumbers});
-
-        // while (winningCharsIterator.next()) |digitsAsBytes| {
-        //     std.debug.print("Yours is:{s}\n", .{digitsAsBytes});
-        // }
-
         while (winningCharsIterator.next()) |digitsAsBytes| {
             if (std.mem.eql(u8, digitsAsBytes, &space) or digitsAsBytes.len == 0) continue;
             yourCharsIterator = split(u8, yourNumbers, &space);
             while (yourCharsIterator.next()) |yourDigitsAsBytes| {
-                // std.debug.print("'{s}' and {s}\n", .{ digitsAsBytes, yourDigitsAsBytes });
-                // std.debug.print(comptime fmt: []const u8, args: anytype)
                 if (std.mem.eql(u8, yourDigitsAsBytes, &space) or yourDigitsAsBytes.len == 0) continue;
                 if (std.mem.eql(u8, digitsAsBytes, yourDigitsAsBytes)) {
                     std.debug.print("Found '{s}' in {s}\n", .{ digitsAsBytes, yourDigitsAsBytes });
@@ -75,97 +63,14 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
                     }
                     break;
                 }
-                // std.debug.print("'{s}' does not equal {s}\n", .{ digitsAsBytes, yourDigitsAsBytes });
             }
-            // if (std.mem.eql(u8, digitsAsBytes, &space) or digitsAsBytes.len == 0) continue;
-
-            // if (try inArray(yourNumbers, digitsAsBytes)) {
-            //     std.debug.print("Found '{s}' in {s}\n", .{ digitsAsBytes, yourNumbers });
-            //     switch (sum) {
-            //         0 => {
-            //             sum = 1;
-            //         },
-            //         else => {
-            //             sum *= 2;
-            //         },
-            //     }
-            // }
         }
 
         answer += sum;
-
-        // std.debug.print("Index is as {}\n", .{indexOfColon});
-        // std.debug.print("Winning is:{s}\n", .{winningNumbers});
-        // std.debug.print("Yours is:{s}\n", .{yourNumbers});
     }
     //
     return answer;
 }
-fn inArray(haystack: []const u8, needle: []const u8) !bool {
-    const needleLength = needle.len + 2;
-    var allocator = std.heap.page_allocator;
-    const buffer = try allocator.alloc(u8, needleLength);
-    const bufferLeft = try allocator.alloc(u8, needleLength - 1);
-    const bufferRight = try allocator.alloc(u8, needleLength - 1);
-    buffer[0] = 32;
-    bufferLeft[0] = 32;
-    bufferRight[bufferRight.len - 1] = 32;
-    buffer[buffer.len - 1] = 32;
-    var i: usize = 0;
-
-    while (i < needle.len) : (i += 1) {
-        buffer[i + 1] = needle[i];
-        bufferLeft[i + 1] = needle[i];
-        bufferRight[i] = needle[i];
-    }
-
-    var index: usize = 0;
-
-    while (index <= haystack.len) : (index += 1) {
-        if (index == 0) {
-            const hay = haystack[index .. index + bufferRight.len];
-            if (std.mem.eql(u8, bufferRight, hay)) {
-                return true;
-            }
-            continue;
-        }
-
-        if (index + bufferLeft.len <= haystack.len) {
-            const hay = haystack[index .. index + bufferLeft.len];
-            if (std.mem.eql(u8, bufferLeft, hay)) {
-                return true;
-            }
-            continue;
-        }
-        // const hay = haystack[index .. index + needleLength];
-        const hay = haystack[index .. index + buffer.len];
-        if (std.mem.eql(u8, buffer, hay)) {
-            return true;
-        }
-        std.debug.print("Needle = '{any}' and hay = {any}\n", .{ buffer, hay });
-        std.debug.print("Needle = '{s}' and hay = {s}\n", .{ buffer, hay });
-        // if (haystack[index] == 32) continue;
-
-    }
-
-    return false;
-}
-// fn indexOfAnyX(comptime T: type, haystack: []const T, needle: []const T) ?usize {
-//     if (needle.len == 0) {
-//         return null; // or an error code, depending on your needs
-//     }
-
-//     var index: usize = 0;
-
-//     while (index < haystack.len) : (index += 1) {
-//         const x = [1]u8{haystack[index]};
-//         if (index + needle.len <= haystack.len and std.mem.eql(u8, &x, needle)) {
-//             return index;
-//         }
-//     }
-
-//     return null; // or an error code, depending on your needs
-// }
 // Useful stdlib functions
 const tokenize = std.mem.tokenize;
 const split = std.mem.split;
