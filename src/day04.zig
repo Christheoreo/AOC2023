@@ -10,7 +10,9 @@ const gpa = util.gpa;
 
 const data = @embedFile("data/day04.txt");
 const testData = @embedFile("data/day04.test.txt");
-
+const splitter = [1]u8{'|'};
+const space = [1]u8{' '};
+const colon = [1]u8{':'};
 pub fn main() !void {
     var startTimePart = std.time.nanoTimestamp();
     var partOneAnswer = try solvePartOne(data);
@@ -37,13 +39,9 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
     var lineIndex: u16 = 0;
     while (lines.next()) |line| {
         defer lineIndex += 1;
-        // std.debug.print("Line = {s}\n", .{line});
-        const colon = [1]u8{':'};
+
         const indexOfColon = std.mem.indexOfAny(u8, line, &colon).?;
         var content = line[indexOfColon..];
-        const splitter = [1]u8{'|'};
-        const space = [1]u8{' '};
-
         const indexOfSplitter = std.mem.indexOfAny(u8, content, &splitter).?;
 
         var winningNumbers = content[2 .. indexOfSplitter - 1];
@@ -102,11 +100,9 @@ pub fn solvePartTwo(buffer: []const u8) !u32 {
         defer lineIndex += 1;
 
         var amountOfThisScratchCard: u32 = rowBuffer[lineIndex];
-        const colon = [1]u8{':'};
+
         const indexOfColon = std.mem.indexOfAny(u8, line, &colon).?;
         var content = line[indexOfColon..];
-        const splitter = [1]u8{'|'};
-        const space = [1]u8{' '};
 
         const indexOfSplitter = std.mem.indexOfAny(u8, content, &splitter).?;
 
