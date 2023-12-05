@@ -11,6 +11,8 @@ const gpa = util.gpa;
 const data = @embedFile("data/day05.txt");
 const testData = @embedFile("data/day05.test.txt");
 
+const MapX = struct { destinationRangeStart: u64, sourceRangeStart: u64, rangeLength: u64 };
+
 pub fn main() !void {
     var startTimePart = std.time.nanoTimestamp();
     var partOneAnswer = try solvePartOne(data);
@@ -32,7 +34,96 @@ pub fn main() !void {
 }
 
 fn solvePartOne(buffer: []const u8) !u32 {
-    _ = buffer;
+    const allocator = std.heap.page_allocator;
+    var lines = std.mem.splitAny(u8, buffer, "\n");
+    var seedToSoilMaps = std.ArrayList(MapX).init(allocator);
+    defer seedToSoilMaps.deinit();
+    var lineIndex: usize = 0;
+    var activeMapperIndex: u32 = 0;
+    while (lines.next()) |line| {
+        defer lineIndex += 1;
+        if (line.len == 0) continue;
+        const seedToSoil = "seed-to-soil map:";
+        const soilToFert = "soil-to-fertilizer map:";
+        const fertToWater = "fertilizer-to-water map:";
+        const waterToLight = "water-to-light map:";
+        const lightToTemp = "light-to-temperature map:";
+        const tempToHumid = "temperature-to-humidity map:";
+        const humidToLocation = "humidity-to-location map:";
+
+        if (std.mem.eql(u8, line, seedToSoil)) {
+            activeMapperIndex = 0;
+            continue;
+        }
+
+        if (std.mem.eql(u8, line, soilToFert)) {
+            activeMapperIndex = 1;
+            continue;
+        }
+
+        if (std.mem.eql(u8, line, fertToWater)) {
+            activeMapperIndex = 2;
+            continue;
+        }
+
+        if (std.mem.eql(u8, line, waterToLight)) {
+            activeMapperIndex = 3;
+            continue;
+        }
+
+        if (std.mem.eql(u8, line, lightToTemp)) {
+            activeMapperIndex = 4;
+            continue;
+        }
+
+        if (std.mem.eql(u8, line, tempToHumid)) {
+            activeMapperIndex = 5;
+            continue;
+        }
+
+        if (std.mem.eql(u8, line, humidToLocation)) {
+            activeMapperIndex = 6;
+            continue;
+        }
+
+        // Should have a line with 3 numbers split by spaces
+
+        var numbersAsBytesIterator = std.mem.splitAny(u8, lineIndex, " ");
+        var m = MapX{ .destinationRangeStart = 0, .sourceRangeStart = 0, .rangeLength = 0 };
+        var numbersAsBytesIteratorIndex: usize = 0;
+        while (numbersAsBytesIterator) |xx| {
+            defer numbersAsBytesIteratorIndex += 1;
+            var number = try parseInt(u8, xx, 10);
+            switch (numbersAsBytesIteratorIndex) {
+                0 => {
+                    m.destinationRangeStart = number;
+                },
+                1 => {
+                    m.sourceRangeStart = number;
+                },
+                else => {
+                    m.rangeLength = number;
+                },
+            }
+        }
+
+        switch (activeMapperIndex) {
+            0 => {
+                try seedToSoilMaps.append(m);
+            },
+            else => {
+                //
+            },
+        }
+        // std.debug.print("Line = {s} ({})\n", .{ line, line.len });
+    }
+
+    for (seedToSoilMaps) |s| {
+        _ = s;
+        // std.debug.print("", args: anytype);
+    }
+
+    // const seedToSoilMaps = allocator.alloc(comptime T: type, n: usize)
     return 0;
 }
 
