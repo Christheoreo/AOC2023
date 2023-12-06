@@ -15,7 +15,8 @@ const MapX = struct { destinationRangeStart: u64, sourceRangeStart: u64, rangeLe
 
 pub fn main() !void {
     var startTimePart = std.time.nanoTimestamp();
-    var partOneAnswer = try solvePartOne(data);
+    // var partOneAnswer = try solvePartOne(data);
+    var partOneAnswer = try solvePartOne(testData);
     var elapsedTimePart: i128 = std.time.nanoTimestamp() - startTimePart;
     const oneMil: f128 = 1_000_000;
     var floatingPoint: f128 = @floatFromInt(elapsedTimePart);
@@ -37,9 +38,17 @@ fn solvePartOne(buffer: []const u8) !u32 {
     const allocator = std.heap.page_allocator;
     var lines = std.mem.splitAny(u8, buffer, "\n");
     var seedToSoilMaps = std.ArrayList(MapX).init(allocator);
+    var soilToFertMaps = std.ArrayList(MapX).init(allocator);
+    var fertToWaterMaps = std.ArrayList(MapX).init(allocator);
+    var waterToLightMaps = std.ArrayList(MapX).init(allocator);
+    var lightToTempMaps = std.ArrayList(MapX).init(allocator);
+    var tempToHumidMaps = std.ArrayList(MapX).init(allocator);
+    var humidToLocationMaps = std.ArrayList(MapX).init(allocator);
     defer seedToSoilMaps.deinit();
+    // TODO defer the rest
     var lineIndex: usize = 0;
     var activeMapperIndex: u32 = 0;
+    var seeds = std.ArrayList(u64).init(allocator);
     while (lines.next()) |line| {
         defer lineIndex += 1;
         if (line.len == 0) continue;
@@ -50,6 +59,16 @@ fn solvePartOne(buffer: []const u8) !u32 {
         const lightToTemp = "light-to-temperature map:";
         const tempToHumid = "temperature-to-humidity map:";
         const humidToLocation = "humidity-to-location map:";
+
+        if (lineIndex == 0) {
+            // the seeds
+            var y = line[7..];
+            var yIterator = std.mem.splitAny(u8, y, " ");
+            while (yIterator.next()) |yy| {
+                try seeds.append(try parseInt(u64, yy, 10));
+            }
+            continue;
+        }
 
         if (std.mem.eql(u8, line, seedToSoil)) {
             activeMapperIndex = 0;
@@ -88,10 +107,10 @@ fn solvePartOne(buffer: []const u8) !u32 {
 
         // Should have a line with 3 numbers split by spaces
 
-        var numbersAsBytesIterator = std.mem.splitAny(u8, lineIndex, " ");
+        var numbersAsBytesIterator = std.mem.splitAny(u8, line, " ");
         var m = MapX{ .destinationRangeStart = 0, .sourceRangeStart = 0, .rangeLength = 0 };
         var numbersAsBytesIteratorIndex: usize = 0;
-        while (numbersAsBytesIterator) |xx| {
+        while (numbersAsBytesIterator.next()) |xx| {
             defer numbersAsBytesIteratorIndex += 1;
             var number = try parseInt(u8, xx, 10);
             switch (numbersAsBytesIteratorIndex) {
@@ -111,6 +130,24 @@ fn solvePartOne(buffer: []const u8) !u32 {
             0 => {
                 try seedToSoilMaps.append(m);
             },
+            1 => {
+                try soilToFertMaps.append(m);
+            },
+            2 => {
+                try fertToWaterMaps.append(m);
+            },
+            3 => {
+                try waterToLightMaps.append(m);
+            },
+            4 => {
+                try lightToTempMaps.append(m);
+            },
+            5 => {
+                try tempToHumidMaps.append(m);
+            },
+            6 => {
+                try humidToLocationMaps.append(m);
+            },
             else => {
                 //
             },
@@ -118,9 +155,15 @@ fn solvePartOne(buffer: []const u8) !u32 {
         // std.debug.print("Line = {s} ({})\n", .{ line, line.len });
     }
 
-    for (seedToSoilMaps) |s| {
-        _ = s;
-        // std.debug.print("", args: anytype);
+    for (seeds.items) |seed| {
+        // Start with seed to soil
+        // is it withiin source range and destination range? if so, add the range.
+        // conitnue here.
+        for (seedToSoilMaps.items) |seedToSoilMap| {
+            if (seed > seedToSoilMap.sourceRangeStart) {
+                std.debug.panic("hehehe\n", .{});
+            }
+        }
     }
 
     // const seedToSoilMaps = allocator.alloc(comptime T: type, n: usize)
