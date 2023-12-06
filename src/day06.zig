@@ -12,8 +12,9 @@ const data = @embedFile("data/day06.txt");
 
 pub fn main() !void {
     var startTimePart = std.time.nanoTimestamp();
-    var partOneAnswer = try solvePartOne();
-    // var partOneAnswer = try solvePartOne(testData);
+    const times = [_]u32{ 50, 74, 86, 85 };
+    const distances = [_]u32{ 242, 1017, 1691, 1252 };
+    var partOneAnswer = try solvePartOne(&times, &distances);
     var elapsedTimePart: i128 = std.time.nanoTimestamp() - startTimePart;
     const oneMil: f128 = 1_000_000;
     var floatingPoint: f128 = @floatFromInt(elapsedTimePart);
@@ -22,8 +23,7 @@ pub fn main() !void {
     std.debug.print("Answer to part one is {}\n", .{partOneAnswer});
 
     startTimePart = std.time.nanoTimestamp();
-    const partTwoAnswer = try solvePartTwo();
-    // const partTwoAnswer = try solvePartTwo(testData);
+    const partTwoAnswer = try solvePartTwo(50748685, 242101716911252);
     elapsedTimePart = std.time.nanoTimestamp() - startTimePart;
 
     floatingPoint = @floatFromInt(elapsedTimePart);
@@ -32,13 +32,7 @@ pub fn main() !void {
     std.debug.print("Answer to part two is {}\n", .{partTwoAnswer});
 }
 
-fn solvePartOne() !u64 {
-    // const times = [_]u32{ 7, 15, 30 };
-    // const distances = [_]u32{ 9, 40, 200 };
-
-    const times = [_]u32{ 50, 74, 86, 85 };
-    const distances = [_]u32{ 242, 1017, 1691, 1252 };
-
+fn solvePartOne(times: []const u32, distances: []const u32) !u64 {
     var answer: u32 = 1;
 
     for (times, 0..) |time, i| {
@@ -58,13 +52,7 @@ fn solvePartOne() !u64 {
     return answer;
 }
 
-fn solvePartTwo() !u64 {
-    // const time: u64 = 71530;
-    // const distanceToBeat: u64 = 940200;
-
-    const time: u64 = 50748685;
-    const distanceToBeat: u64 = 242101716911252;
-
+fn solvePartTwo(time: u64, distanceToBeat: u64) !u64 {
     var answer: u32 = 0;
     var miliSecondHold: u32 = 1;
     while (miliSecondHold < time) : (miliSecondHold += 1) {
@@ -76,6 +64,18 @@ fn solvePartTwo() !u64 {
     }
 
     return answer;
+}
+
+test "Part One should solve" {
+    const times = [_]u32{ 7, 15, 30 };
+    const distances = [_]u32{ 9, 40, 200 };
+    try std.testing.expect(try solvePartOne(&times, &distances) == 288);
+}
+
+test "Part two should solve" {
+    const time: u32 = 71530;
+    const distanceToBeat = 940200;
+    try std.testing.expect(try solvePartTwo(time, distanceToBeat) == 71503);
 }
 
 // Useful stdlib functions
