@@ -26,12 +26,12 @@ pub fn main() !void {
 
     startTimePart = std.time.nanoTimestamp();
     const partTwoAnswer = try solvePartTwo(data);
-    // const partTwoAnswer = try solvePartTwo(testData);
+    const idk: f128 = 1_000_000_000;
     elapsedTimePart = std.time.nanoTimestamp() - startTimePart;
-
+    mili = floatingPoint / idk;
     floatingPoint = @floatFromInt(elapsedTimePart);
     mili = floatingPoint / oneMil;
-    std.debug.print("Part 2 took: {} nanoseconds and {} miliseconds\n", .{ elapsedTimePart, mili });
+    std.debug.print("Part 2 took: {} seconds \n", .{mili});
     std.debug.print("Answer to part two is {}\n", .{partTwoAnswer});
 }
 
@@ -385,13 +385,113 @@ fn solvePartTwo(buffer: []const u8) !u64 {
         }
         // std.debug.print("Line = {s} ({})\n", .{ line, line.len });
     }
-
     for (seeds.items) |seed| {
-        _ = seed;
+        var minValue = seed[0];
+
+        const maxBoundary = seed[0] + seed[1];
+
+        while (minValue < maxBoundary) : (minValue += 1) {
+            var destValue: u64 = minValue;
+            // std.debug.print("Starting value is {}\n", .{destValue});
+            for (seedToSoilMaps.items) |seedToSoilMap| {
+                const mn: u64 = seedToSoilMap.sourceRangeStart;
+                const mx: u64 = mn + seedToSoilMap.rangeLength;
+                if (destValue >= mn and destValue <= mx) {
+                    destValue = (destValue - mn) + seedToSoilMap.destinationRangeStart;
+                    break;
+                }
+            }
+
+            // std.debug.print("After seed-to-soil value is {}\n", .{destValue});
+
+            for (soilToFertMaps.items) |soilToFertMap| {
+                const mn: u64 = soilToFertMap.sourceRangeStart;
+                const mx: u64 = mn + soilToFertMap.rangeLength;
+                if (destValue >= mn and destValue <= mx) {
+                    destValue = (destValue - mn) + soilToFertMap.destinationRangeStart;
+                    break;
+                }
+            }
+            // std.debug.print("After soil-to-fert value is {}\n", .{destValue});
+
+            for (fertToWaterMaps.items) |fertoWaterMap| {
+                const mn: u64 = fertoWaterMap.sourceRangeStart;
+                const mx: u64 = mn + fertoWaterMap.rangeLength;
+                if (destValue >= mn and destValue <= mx) {
+                    destValue = (destValue - mn) + fertoWaterMap.destinationRangeStart;
+                    break;
+                }
+            }
+
+            // std.debug.print("After fert-to-water value is {}\n", .{destValue});
+
+            for (waterToLightMaps.items) |waterToLightMap| {
+                const mn: u64 = waterToLightMap.sourceRangeStart;
+                const mx: u64 = mn + waterToLightMap.rangeLength;
+                if (destValue >= mn and destValue <= mx) {
+                    destValue = (destValue - mn) + waterToLightMap.destinationRangeStart;
+                    break;
+                }
+            }
+            // std.debug.print("After water-to-light value is {}\n", .{destValue});
+
+            for (lightToTempMaps.items) |genericMap| {
+                const mn: u64 = genericMap.sourceRangeStart;
+                const mx: u64 = mn + genericMap.rangeLength;
+                if (destValue >= mn and destValue <= mx) {
+                    destValue = (destValue - mn) + genericMap.destinationRangeStart;
+                    break;
+                }
+            }
+
+            // std.debug.print("After light-to-temp value is {}\n", .{destValue});
+
+            for (tempToHumidMaps.items) |genericMap| {
+                const mn: u64 = genericMap.sourceRangeStart;
+                const mx: u64 = mn + genericMap.rangeLength;
+                if (destValue >= mn and destValue <= mx) {
+                    destValue = (destValue - mn) + genericMap.destinationRangeStart;
+                    break;
+                }
+            }
+
+            // std.debug.print("After temp-to-humid value is {}\n", .{destValue});
+
+            for (humidToLocationMaps.items) |genericMap| {
+                const mn: u64 = genericMap.sourceRangeStart;
+                const mx: u64 = mn + genericMap.rangeLength;
+                if (destValue >= mn and destValue <= mx) {
+                    destValue = (destValue - mn) + genericMap.destinationRangeStart;
+                    break;
+                }
+            }
+
+            // std.debug.print("After humid-to-location value is {}\n\n\n\n", .{destValue});
+
+            switch (answer) {
+                0 => {
+                    answer = destValue;
+                },
+                else => {
+                    if (answer > destValue) {
+                        answer = destValue;
+                    }
+                },
+            }
+        }
     }
     // const seedToSoilMaps = allocator.alloc(comptime T: type, n: usize)
     return answer;
 }
+
+test "part one should solve" {
+    try std.testing.expect(try solvePartOne(testData) == 35);
+}
+
+test "part two should solve" {
+    try std.testing.expect(try solvePartTwo(testData) == 46);
+}
+
 // Useful stdlib functions
 const tokenize = std.mem.tokenize;
 const split = std.mem.split;
