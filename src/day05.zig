@@ -385,108 +385,10 @@ fn solvePartTwo(buffer: []const u8) !u64 {
         }
         // std.debug.print("Line = {s} ({})\n", .{ line, line.len });
     }
-    var xyz: u128 = 0;
 
     for (seeds.items) |seed| {
-        std.debug.print("Iteration {} of {}\n", .{ xyz, totalIterations });
-        // Start with seed to soil
-        // is it withiin source range and destination range? if so, add the range.
-        // conitnue here.
-        const upperBoundary: u64 = seed[0] + seed[1];
-        var seedIndex: usize = seed[0];
-
-        while (seedIndex < upperBoundary) : (seedIndex += 1) {
-            xyz += 1;
-            // std.debug.print("Iteration {} of {}\n", .{ xyz, totalIterations });
-            var destValue: u64 = seedIndex;
-            for (seedToSoilMaps.items) |seedToSoilMap| {
-                const mn: u64 = seedToSoilMap.sourceRangeStart;
-                const mx: u64 = mn + seedToSoilMap.rangeLength;
-                if (destValue >= mn and destValue <= mx) {
-                    destValue = (destValue - mn) + seedToSoilMap.destinationRangeStart;
-                    break;
-                }
-            }
-
-            // std.debug.print("After seed-to-soil value is {}\n", .{destValue});
-
-            for (soilToFertMaps.items) |soilToFertMap| {
-                const mn: u64 = soilToFertMap.sourceRangeStart;
-                const mx: u64 = mn + soilToFertMap.rangeLength;
-                if (destValue >= mn and destValue <= mx) {
-                    destValue = (destValue - mn) + soilToFertMap.destinationRangeStart;
-                    break;
-                }
-            }
-            // std.debug.print("After soil-to-fert value is {}\n", .{destValue});
-
-            for (fertToWaterMaps.items) |fertoWaterMap| {
-                const mn: u64 = fertoWaterMap.sourceRangeStart;
-                const mx: u64 = mn + fertoWaterMap.rangeLength;
-                if (destValue >= mn and destValue <= mx) {
-                    destValue = (destValue - mn) + fertoWaterMap.destinationRangeStart;
-                    break;
-                }
-            }
-
-            // std.debug.print("After fert-to-water value is {}\n", .{destValue});
-
-            for (waterToLightMaps.items) |waterToLightMap| {
-                const mn: u64 = waterToLightMap.sourceRangeStart;
-                const mx: u64 = mn + waterToLightMap.rangeLength;
-                if (destValue >= mn and destValue <= mx) {
-                    destValue = (destValue - mn) + waterToLightMap.destinationRangeStart;
-                    break;
-                }
-            }
-            // std.debug.print("After water-to-light value is {}\n", .{destValue});
-
-            for (lightToTempMaps.items) |genericMap| {
-                const mn: u64 = genericMap.sourceRangeStart;
-                const mx: u64 = mn + genericMap.rangeLength;
-                if (destValue >= mn and destValue <= mx) {
-                    destValue = (destValue - mn) + genericMap.destinationRangeStart;
-                    break;
-                }
-            }
-
-            // std.debug.print("After light-to-temp value is {}\n", .{destValue});
-
-            for (tempToHumidMaps.items) |genericMap| {
-                const mn: u64 = genericMap.sourceRangeStart;
-                const mx: u64 = mn + genericMap.rangeLength;
-                if (destValue >= mn and destValue <= mx) {
-                    destValue = (destValue - mn) + genericMap.destinationRangeStart;
-                    break;
-                }
-            }
-
-            // std.debug.print("After temp-to-humid value is {}\n", .{destValue});
-
-            for (humidToLocationMaps.items) |genericMap| {
-                const mn: u64 = genericMap.sourceRangeStart;
-                const mx: u64 = mn + genericMap.rangeLength;
-                if (destValue >= mn and destValue <= mx) {
-                    destValue = (destValue - mn) + genericMap.destinationRangeStart;
-                    break;
-                }
-            }
-
-            // std.debug.print("After humid-to-location value is {}\n\n\n\n", .{destValue});
-
-            switch (answer) {
-                0 => {
-                    answer = destValue;
-                },
-                else => {
-                    if (answer > destValue) {
-                        answer = destValue;
-                    }
-                },
-            }
-        }
+        _ = seed;
     }
-
     // const seedToSoilMaps = allocator.alloc(comptime T: type, n: usize)
     return answer;
 }
