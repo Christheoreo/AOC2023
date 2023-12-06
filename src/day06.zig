@@ -21,15 +21,15 @@ pub fn main() !void {
     std.debug.print("Part 1 took: {} nanoseconds and {} miliseconds\n", .{ elapsedTimePart, mili });
     std.debug.print("Answer to part one is {}\n", .{partOneAnswer});
 
-    // startTimePart = std.time.nanoTimestamp();
-    // const partTwoAnswer = try solvePartTwo(data);
-    // // const partTwoAnswer = try solvePartTwo(testData);
-    // elapsedTimePart = std.time.nanoTimestamp() - startTimePart;
+    startTimePart = std.time.nanoTimestamp();
+    const partTwoAnswer = try solvePartTwo();
+    // const partTwoAnswer = try solvePartTwo(testData);
+    elapsedTimePart = std.time.nanoTimestamp() - startTimePart;
 
-    // floatingPoint = @floatFromInt(elapsedTimePart);
-    // mili = floatingPoint / oneMil;
-    // std.debug.print("Part 2 took: {} nanoseconds and {} miliseconds\n", .{ elapsedTimePart, mili });
-    // std.debug.print("Answer to part two is {}\n", .{partTwoAnswer});
+    floatingPoint = @floatFromInt(elapsedTimePart);
+    mili = floatingPoint / oneMil;
+    std.debug.print("Part 2 took: {} nanoseconds and {} miliseconds\n", .{ elapsedTimePart, mili });
+    std.debug.print("Answer to part two is {}\n", .{partTwoAnswer});
 }
 
 fn solvePartOne() !u64 {
@@ -58,9 +58,24 @@ fn solvePartOne() !u64 {
     return answer;
 }
 
-fn solvePartTwo(buffer: []const u8) !u64 {
-    _ = buffer;
-    return 0;
+fn solvePartTwo() !u64 {
+    // const time: u64 = 71530;
+    // const distanceToBeat: u64 = 940200;
+
+    const time: u64 = 50748685;
+    const distanceToBeat: u64 = 242101716911252;
+
+    var answer: u32 = 0;
+    var miliSecondHold: u32 = 1;
+    while (miliSecondHold < time) : (miliSecondHold += 1) {
+        const travelTime = time - miliSecondHold;
+        const distanceTravelled = travelTime * miliSecondHold;
+        if (distanceTravelled > distanceToBeat) {
+            answer += 1;
+        }
+    }
+
+    return answer;
 }
 
 // Useful stdlib functions
