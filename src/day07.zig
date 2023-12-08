@@ -16,8 +16,8 @@ const cardOrder = [_]u8{ 'A', 'K', 'Q', 'J', 10, 9, 8, 7, 6, 5, 4, 3, 2 };
 
 pub fn main() !void {
     var startTimePart = std.time.nanoTimestamp();
-    var partOneAnswer = try solvePartOne(testData);
-    // var partOneAnswer = try solvePartOne(data);
+    // var partOneAnswer = try solvePartOne(testData);
+    var partOneAnswer = try solvePartOne(data);
     var elapsedTimePart: i128 = std.time.nanoTimestamp() - startTimePart;
     const oneMil: f128 = 1_000_000;
     var floatingPoint: f128 = @floatFromInt(elapsedTimePart);
@@ -73,7 +73,8 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
     for (hands.items) |xxx| {
         defer rank += 1;
         answer += rank * xxx.bid;
-        std.debug.print("value is {any}\n", .{xxx.cards});
+        std.debug.print("value is {any} {s}\n", .{ xxx.cards, xxx.cards });
+        // std.debug.print("value is {any}\n", .{xxx.cards});
     }
     // std.mem.sort(Hand, hands.items, {}, ());
 
@@ -97,46 +98,45 @@ fn compareHands(_: void, a: Hand, b: Hand) bool {
             // J is 74
             // T is 84
 
-            if (byteA == 65) {
-                return byteA < byteB;
-            }
-            if (byteB == 65) {
-                return byteB < byteA;
-            }
-
-            if (byteA == 75) {
-                return byteA < byteB;
-            }
-
-            if (byteB == 75) {
-                return byteB < byteA;
-            }
-
-            if (byteA == 81) {
-                return byteA < byteB;
-            }
-
-            if (byteB == 81) {
-                return byteB < byteA;
+            switch (byteA) {
+                84 => {
+                    byteA = 58;
+                },
+                74 => {
+                    byteA = 59;
+                },
+                81 => {
+                    byteA = 60;
+                },
+                75 => {
+                    byteA = 61;
+                },
+                65 => {
+                    byteA = 62;
+                },
+                else => {},
             }
 
-            if (byteA == 74) {
-                return byteA < byteB;
+            switch (byteB) {
+                84 => {
+                    byteB = 58;
+                },
+                74 => {
+                    byteB = 59;
+                },
+                81 => {
+                    byteB = 60;
+                },
+                75 => {
+                    byteB = 61;
+                },
+                65 => {
+                    byteB = 62;
+                },
+                else => {},
             }
 
-            if (byteB == 74) {
-                return byteB < byteA;
-            }
-
-            if (byteA == 84) {
-                return byteA < byteB;
-            }
-
-            if (byteB == 84) {
-                return byteB < byteA;
-            }
-
-            return byteA > byteB;
+            return byteA < byteB;
         }
     }
 
