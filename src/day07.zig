@@ -13,6 +13,7 @@ const testData = @embedFile("data/day07.test.txt");
 const HandType = enum(u32) { FiveOfAKind = 7, FourOfAKind = 6, FullHouse = 5, ThreeOfAKind = 4, TwoPair = 3, OnePair = 2, HighCard = 1 };
 const Hand = struct { cards: [5]u8, bid: u32, handType: HandType };
 const cardOrder = [_]u8{ 'A', 'K', 'Q', 'J', 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+const cardOrder2 = [_]u8{ 'A', 'K', 'Q', 10, 9, 8, 7, 6, 5, 4, 3, 2, 'J' };
 
 pub fn main() !void {
     var startTimePart = std.time.nanoTimestamp();
@@ -26,7 +27,7 @@ pub fn main() !void {
     std.debug.print("Answer to part one is {}\n", .{partOneAnswer});
 
     startTimePart = std.time.nanoTimestamp();
-    const partTwoAnswer = try solvePartTwo(testData);
+    const partTwoAnswer = try solvePartTwo(data);
     elapsedTimePart = std.time.nanoTimestamp() - startTimePart;
 
     floatingPoint = @floatFromInt(elapsedTimePart);
@@ -49,7 +50,6 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
     while (lines.next()) |line| {
         defer lineIndex += 1;
         const bidBytes = line[6..];
-        // const cards = line[0..5];
         const cards: [5]u8 = [5]u8{ line[0], line[1], line[2], line[3], line[4] };
 
         const hand = Hand{ .cards = cards, .handType = try findHandType(cards), .bid = try parseInt(u32, bidBytes, 10) };
@@ -57,28 +57,15 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
         try hands.append(hand);
         var val: u32 = @intFromEnum(hand.handType);
         try handsTypes.append(val);
-
-        std.debug.print("Bid Bytes .{s}.\n", .{bidBytes});
-        std.debug.print("Cards .{s}.\n", .{cards});
-        std.debug.print("Hand Type .{any}.\n\n\n", .{hand.handType});
     }
 
-    // std.mem.sort(u32, handsTypes.items, {}, comptime std.sort.desc(u32));
     std.mem.sort(Hand, hands.items, {}, comptime compareHands);
 
-    // for (handsTypes.items) |xxx| {
-    //     std.debug.print("value is {}\n", .{xxx});
-    // }
     var rank: u32 = 1;
     for (hands.items) |xxx| {
         defer rank += 1;
         answer += rank * xxx.bid;
-        std.debug.print("value is {any} {s}\n", .{ xxx.cards, xxx.cards });
-        // std.debug.print("value is {any}\n", .{xxx.cards});
     }
-    // std.mem.sort(Hand, hands.items, {}, ());
-
-    // Now we need to sort the hands
     return answer;
 }
 
@@ -143,9 +130,99 @@ fn compareHands(_: void, a: Hand, b: Hand) bool {
     return @intFromEnum(a.handType) < @intFromEnum(b.handType);
 }
 
+// Define a comparison function for sorting persons by age
+fn compareHands2(_: void, a: Hand, b: Hand) bool {
+    if (a.handType == b.handType) {
+        // now check the cards line by line
+        var index: usize = 0;
+        while (index < a.cards.len) : (index += 1) {
+            var byteA = a.cards[index];
+            var byteB = b.cards[index];
+            if (byteA == byteB) continue;
+
+            // A is 65
+            // K is 75
+            // Q is 81
+            // J is 74
+            // T is 84
+
+            switch (byteA) {
+                84 => {
+                    byteA = 58;
+                },
+                74 => {
+                    byteA = 1;
+                },
+                81 => {
+                    byteA = 60;
+                },
+                75 => {
+                    byteA = 61;
+                },
+                65 => {
+                    byteA = 62;
+                },
+                else => {},
+            }
+
+            switch (byteB) {
+                84 => {
+                    byteB = 58;
+                },
+                74 => {
+                    byteB = 1;
+                },
+                81 => {
+                    byteB = 60;
+                },
+                75 => {
+                    byteB = 61;
+                },
+                65 => {
+                    byteB = 62;
+                },
+                else => {},
+            }
+
+            return byteA < byteB;
+        }
+    }
+
+    return @intFromEnum(a.handType) < @intFromEnum(b.handType);
+}
+
 pub fn solvePartTwo(buffer: []const u8) !u32 {
-    _ = buffer;
-    return 0;
+    var answer: u32 = 0;
+    var lines = std.mem.splitAny(u8, buffer, "\n");
+    var lineIndex: usize = 0;
+    var allocator = std.heap.page_allocator;
+    var hands = std.ArrayList(Hand).init(allocator);
+    hands.deinit();
+
+    var handsTypes = std.ArrayList(u32).init(allocator);
+    handsTypes.deinit();
+
+    while (lines.next()) |line| {
+        defer lineIndex += 1;
+        const bidBytes = line[6..];
+        const cards: [5]u8 = [5]u8{ line[0], line[1], line[2], line[3], line[4] };
+
+        const hand = Hand{ .cards = cards, .handType = try findHandType2(cards), .bid = try parseInt(u32, bidBytes, 10) };
+
+        try hands.append(hand);
+        var val: u32 = @intFromEnum(hand.handType);
+        try handsTypes.append(val);
+    }
+
+    std.mem.sort(Hand, hands.items, {}, comptime compareHands2);
+
+    var rank: u32 = 1;
+    for (hands.items) |xxx| {
+        defer rank += 1;
+        std.debug.print("{s}\n", .{xxx.cards});
+        answer += rank * xxx.bid;
+    }
+    return answer;
 }
 
 fn findHandType(cards: [5]u8) !HandType {
@@ -183,6 +260,64 @@ fn findHandType(cards: [5]u8) !HandType {
     // Check for one pair and High card
 
     return HandType.HighCard;
+}
+
+fn findHandType2(cards: [5]u8) !HandType {
+    var allocator = std.heap.page_allocator;
+    var map = std.AutoHashMap(u8, u32).init(
+        allocator,
+    );
+    defer map.deinit();
+    var jCount: u32 = 0;
+    for (cards) |card| {
+        if (card == 'J') {
+            jCount += 1;
+        }
+        if (map.get(card)) |val| {
+            try map.put(card, val + 1);
+            continue;
+        }
+        try map.put(card, 1);
+    }
+
+    // here - check if they contain any J's - and then do the extra logic
+
+    if (jCount == 0) {
+        return findHandType(cards);
+    }
+
+    // if (map.count() == 1 or map.count() == 2) return HandType.FiveOfAKind;
+    const previousHand = try findHandType(cards);
+
+    switch (previousHand) {
+        HandType.HighCard => {
+            return HandType.OnePair;
+        },
+        HandType.OnePair => {
+            return HandType.ThreeOfAKind;
+            // if (jCount == 2) {
+            // }
+            // return HandType.TwoPair;
+        },
+        HandType.TwoPair => {
+            if (jCount == 2) {
+                return HandType.FourOfAKind;
+            }
+            return HandType.FullHouse;
+        },
+        HandType.ThreeOfAKind => {
+            return HandType.FourOfAKind;
+        },
+        else => {
+            return HandType.FiveOfAKind;
+        },
+    }
+
+    if (previousHand == HandType.HighCard) {
+        return HandType.OnePair;
+    }
+
+    // return @enumFromInt(@intFromEnum(previousHand) + jCount);
 }
 
 test "part one should solve" {
