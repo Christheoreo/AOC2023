@@ -219,7 +219,6 @@ pub fn solvePartTwo(buffer: []const u8) !u32 {
     var rank: u32 = 1;
     for (hands.items) |xxx| {
         defer rank += 1;
-        std.debug.print("{s}\n", .{xxx.cards});
         answer += rank * xxx.bid;
     }
     return answer;
@@ -280,13 +279,9 @@ fn findHandType2(cards: [5]u8) !HandType {
         try map.put(card, 1);
     }
 
-    // here - check if they contain any J's - and then do the extra logic
-
     if (jCount == 0) {
         return findHandType(cards);
     }
-
-    // if (map.count() == 1 or map.count() == 2) return HandType.FiveOfAKind;
     const previousHand = try findHandType(cards);
 
     switch (previousHand) {
@@ -295,9 +290,6 @@ fn findHandType2(cards: [5]u8) !HandType {
         },
         HandType.OnePair => {
             return HandType.ThreeOfAKind;
-            // if (jCount == 2) {
-            // }
-            // return HandType.TwoPair;
         },
         HandType.TwoPair => {
             if (jCount == 2) {
@@ -316,12 +308,14 @@ fn findHandType2(cards: [5]u8) !HandType {
     if (previousHand == HandType.HighCard) {
         return HandType.OnePair;
     }
-
-    // return @enumFromInt(@intFromEnum(previousHand) + jCount);
 }
 
 test "part one should solve" {
     try std.testing.expect(try solvePartOne(testData) == 6440);
+}
+
+test "part two should solve" {
+    try std.testing.expect(try solvePartTwo(testData) == 5905);
 }
 
 // Useful stdlib functions
