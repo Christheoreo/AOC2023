@@ -12,12 +12,9 @@ const data = @embedFile("data/day07.txt");
 const testData = @embedFile("data/day07.test.txt");
 const HandType = enum(u32) { FiveOfAKind = 7, FourOfAKind = 6, FullHouse = 5, ThreeOfAKind = 4, TwoPair = 3, OnePair = 2, HighCard = 1 };
 const Hand = struct { cards: [5]u8, bid: u32, handType: HandType };
-const cardOrder = [_]u8{ 'A', 'K', 'Q', 'J', 10, 9, 8, 7, 6, 5, 4, 3, 2 };
-const cardOrder2 = [_]u8{ 'A', 'K', 'Q', 10, 9, 8, 7, 6, 5, 4, 3, 2, 'J' };
 
 pub fn main() !void {
     var startTimePart = std.time.nanoTimestamp();
-    // var partOneAnswer = try solvePartOne(testData);
     var partOneAnswer = try solvePartOne(data);
     var elapsedTimePart: i128 = std.time.nanoTimestamp() - startTimePart;
     const oneMil: f128 = 1_000_000;
