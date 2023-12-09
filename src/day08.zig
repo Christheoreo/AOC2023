@@ -119,29 +119,17 @@ pub fn solvePartTwo(buffer: []const u8) !u128 {
     const instructionsArray = instructions.items;
     var instructionIndex: u32 = 0;
 
-    // var keepGoing: bool = true;
-    var allItemsEndInZ: bool = false;
-    var arr = std.AutoHashMap(u32, u128).init(allocator);
-    defer arr.deinit();
-
-    // var dm = std.ArrayList(u32).init(allocator);
     var dm = try allocator.alloc(u128, currentDetails.items.len);
 
     defer allocator.free(dm);
 
-    var xxxx: u32 = 0;
-
-    while (xxxx < dm.len) : (xxxx += 1) {
-        dm[xxxx] = 0;
+    var i: u32 = 0;
+    while (i < dm.len) : (i += 1) {
+        dm[i] = 0;
     }
-    // var currentDetail: MapDetail = detailsMap.get([3]u8{ 'A', 'A', 'A' }).?;
-    // var highestCount: u32 = 0;
-    // _ = highestCount;
-    while (!allItemsEndInZ) {
+    while (true) {
         answer += 1;
-        var localEndsInZ: bool = true;
         var detailsIndex: u32 = 0;
-        var currentCount: u32 = 0;
         while (detailsIndex < currentDetails.items.len) : (detailsIndex += 1) {
             if (instructionsArray[instructionIndex] == 'L') {
                 currentDetails.items[detailsIndex] = detailsMap.get(currentDetails.items[detailsIndex].left).?;
@@ -149,107 +137,30 @@ pub fn solvePartTwo(buffer: []const u8) !u128 {
                 currentDetails.items[detailsIndex] = detailsMap.get(currentDetails.items[detailsIndex].right).?;
             }
 
-            if (currentDetails.items[detailsIndex].location[2] != 'Z') {
-                localEndsInZ = false;
-                // std.debug.print("\n", .{});
-            } else {
-                currentCount += 1;
-                // var b: []u8 = undefined;
-                if (arr.get(detailsIndex) == null) {
-                    try arr.put(detailsIndex, answer);
+            if (currentDetails.items[detailsIndex].location[2] == 'Z') {
+                if (dm[detailsIndex] == 0) {
                     dm[detailsIndex] = answer;
-                    std.debug.print("Index {} of {} ends in Z instuction index {} and iteration {}\n", .{ detailsIndex, currentDetails.items.len, instructionIndex, answer });
-                } else {
-                    // dm[detailsIndex] = answer - arr.get(detailsIndex).?;
-                    // if (detailsIndex == 6) {
-                    //     std.debug.print("Diff from last answer is {}\n", .{answer - arr.get(detailsIndex).?});
-                    //     try arr.put(detailsIndex, answer);
-                    // }
                 }
-                // try arr.append(std.fmt.bufPrint(&b, "Index "));
-                // if (detailsIndex == 0) {
-                //     std.debug.print("first\n", .{});
-                // }
-
-                // if (detailsIndex == 0) {
-                //     std.debug.print("Index {} of {} ends in Z instuction index {} and iteration {}\n", .{ detailsIndex, currentDetails.items.len, instructionIndex, answer });
-                // }
             }
         }
 
-        var showBreak: bool = true;
-
+        var allZeros: bool = false;
         for (dm) |xx| {
             if (xx == 0) {
-                showBreak = false;
+                allZeros = true;
                 break;
             }
         }
 
-        if (showBreak) break;
-
-        // if (currentCount > highestCount) {
-        //     std.debug.print("As {} iterations, we had {} paths all ending on Z\n", .{ answer, currentCount });
-        //     highestCount = currentCount;
-        // }
-        // std.debug.print("Done - iteration {}\n", .{answer});
-
-        // for (currentDetails.items) |item| {
-        //     if (instructionsArray[instructionIndex] == 'L') {
-        //         item = detailsMap.get(item.left).?;
-        //     } else {
-        //         item = detailsMap.get(item.right).?;
-        //     }
-
-        //     if (item.location[2] != 'Z') {
-        //         localEndsInZ = false;
-        //     }
-        // }
-
-        allItemsEndInZ = localEndsInZ;
+        if (!allZeros) break;
 
         if (instructionIndex + 1 >= instructionsArray.len) {
             instructionIndex = 0;
         } else instructionIndex += 1;
     }
 
-    // now calculate the differensws
-
-    for (dm, 0..) |xx, index| {
-        std.debug.print("Index {} has a diff of {}\n", .{ index, xx });
-    }
-    // const numbers = [_]u128{ 24, 36, 48, 60, 72, 84 };
-    // answer = dm[0];
-    // // answer = numbers[0];
-
-    // for (dm) |num| {
-    //     // for (numbers) |num| {
-    //     answer = lcm(answer, num);
-    // }
-
-    // // Check if result is a multiple of all other numbers
-    // var includeResult = true;
-    // for (dm[1..]) |num| {
-    //     if (answer % num != 0) {
-    //         includeResult = false;
-    //         break;
-    //     }
-    // }
-
-    // if (includeResult) {
-    //     std.debug.print("LCM (including one of the numbers): {}\n", .{answer});
-    // } else {
-    //     std.debug.print("LCM: {}\n", .{answer});
-    // }
-
     answer = findLcm(dm);
 
-    // for (maps.items) |detail| {
-    //     std.debug.print("Detail location = .{s}. left = .{s}. right = .{s}.\n", .{ detail.location, detail.left, detail.right });
-    //     if (instructionIndex >= instructionsArray.len) {
-    //         instructionIndex = 0;
-    //     } else instructionIndex += 1;
-    // }
     return answer;
 }
 
@@ -277,8 +188,6 @@ fn findLcm(numbers: []u128) u128 {
     while (i < numbers.len) : (i += 1) {
         result = lcm(result, numbers[i]);
     }
-    // for i in range(1, len(arr)):
-    //     result = lcm(result, arr[i])
     return result;
 }
 
