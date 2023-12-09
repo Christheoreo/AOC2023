@@ -164,6 +164,7 @@ pub fn solvePartTwo(buffer: []const u8) !u128 {
     return answer;
 }
 
+// Greatest Common Divider
 fn gcd(a: u128, b: u128) u128 {
     var aa: u128 = a;
     var bb: u128 = b;
@@ -175,6 +176,7 @@ fn gcd(a: u128, b: u128) u128 {
     return aa;
 }
 
+// Least common multiple
 fn lcm(a: u128, b: u128) u128 {
     if (a == 0 or b == 0) {
         return 0;
