@@ -10,6 +10,7 @@ const gpa = util.gpa;
 
 const data = @embedFile("data/day10.txt");
 const testData = @embedFile("data/day10.test.txt");
+const testData2 = @embedFile("data/day10.test2.txt");
 
 const EPipeType = enum(u8) { Vertical = '|', Horizontal = '-', QuaterBendNorthToEast = 'L', QuaterBendNorthToWest = 'J', QuaterBendSouthToWest = '7', QuaterBendSouthToEast = 'F', Ground = '.', Animal = 'S' };
 const PipeJourney = struct { pos: @Vector(2, u32), direction: u8 };
@@ -24,7 +25,7 @@ pub fn main() !void {
     std.debug.print("Answer to part one is {}\n", .{partOneAnswer});
 
     startTimePart = std.time.nanoTimestamp();
-    const partTwoAnswer = try solvePartTwo(testData);
+    const partTwoAnswer = try solvePartTwo(testData2);
     elapsedTimePart = std.time.nanoTimestamp() - startTimePart;
 
     floatingPoint = @floatFromInt(elapsedTimePart);
@@ -91,14 +92,6 @@ pub fn solvePartOne(buffer: []const u8) !u32 {
         journeyA = findNextMove(grid, journeyA);
         journeyB = findNextMove(grid, journeyB);
     }
-
-    // std.debug.print("Length of grid = {}\n", .{grid.len});
-    // std.debug.print("Connection A = {}\n", .{connectionA});
-    // std.debug.print("Connection B = {}\n", .{connectionB});
-    // for (grid) |gg| {
-    //     std.debug.print("Gridline = {s}\n", .{gg});
-    // }
-    // Assuming the S only has 2 connections. Then will work around.
     return steps;
 }
 
@@ -238,16 +231,73 @@ fn findNextMove(grid: [][]u8, pos: PipeJourney) PipeJourney {
 }
 
 pub fn solvePartTwo(buffer: []const u8) !u32 {
-    _ = buffer;
-    return 0;
+    var lines = std.mem.splitAny(u8, buffer, "\n");
+    var lineCount: u32 = @intCast(std.mem.count(u8, buffer, "\n"));
+    lineCount += 1;
+    var allocator = std.heap.page_allocator;
+    var grid = try allocator.alloc([]u8, lineCount);
+    defer allocator.free(grid);
+    var lineIndex: u32 = 0;
+    var x: u32 = 0;
+    var y: u32 = 0;
+    while (lines.next()) |line| {
+        defer lineIndex += 1;
+        var gridLine = try allocator.alloc(u8, line.len);
+        // defer allocator.free(gridLine);
+        var i: u32 = 0;
+        // std.debug.print("grid line length = {}\n", .{gridLine.len});
+        while (i < line.len) : (i += 1) {
+            gridLine[i] = line[i];
+            if (gridLine[i] == 'S') {
+                x = i;
+                y = lineIndex;
+            }
+        }
+        grid[lineIndex] = gridLine;
+    }
+
+    // Check up down left and right to see where our 2 connecting points are
+
+    var connectionA: @Vector(2, u32) = .{ x, y };
+    var connectionB: @Vector(2, u32) = .{ x, y };
+
+    connectionA = findNextConnection(grid, connectionA, connectionA);
+    connectionB = findNextConnection(grid, connectionB, connectionA);
+    var journeyA = PipeJourney{ .pos = connectionA, .direction = 'W' };
+    var journeyB = PipeJourney{ .pos = connectionB, .direction = 'W' };
+
+    if (connectionA[0] > x) {
+        journeyA.direction = 'E';
+    } else if (connectionA[1] > y) {
+        journeyA.direction = 'S';
+    } else if (connectionA[1] < y) {
+        journeyA.direction = 'N';
+    }
+
+    if (connectionB[0] > x) {
+        journeyB.direction = 'E';
+    } else if (connectionB[1] > y) {
+        journeyB.direction = 'S';
+    } else if (connectionB[1] < y) {
+        journeyB.direction = 'N';
+    }
+
+    var steps: u32 = 1;
+    // TODO - add these values to a grid so we can work out if anything is surrounded
+    while (!std.meta.eql(journeyA.pos, journeyB.pos)) {
+        defer steps += 1;
+        journeyA = findNextMove(grid, journeyA);
+        journeyB = findNextMove(grid, journeyB);
+    }
+    return steps;
 }
 
 test "part one should solve" {
-    try std.testing.expect(try solvePartOne(testData) == 0);
+    try std.testing.expect(try solvePartOne(testData) == 8);
 }
 
 test "part two should solve" {
-    try std.testing.expect(try solvePartTwo(testData) == 0);
+    try std.testing.expect(try solvePartTwo(testData2) == 10);
 }
 
 // Useful stdlib functions
