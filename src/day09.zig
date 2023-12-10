@@ -58,37 +58,28 @@ fn findNextSequence(buffer: []i32) !i32 {
 
     while (true) {
         var sequence = try allocator.alloc(i32, currentBuffer.len - 1);
+        // If i defer the memory, I can't access the arrayList item.
         // defer allocator.free(sequence);
         var i: usize = 0;
         var j: usize = 1;
         while (j < currentBuffer.len) {
-            // std.debug.print("Current buffer length ={} and i = {} and j = {}\n", .{ currentBuffer.len, i, j });
             defer i += 1;
             defer j += 1;
-            // std.debug.print("a = {} b = {}\n", .{ currentBuffer[j], currentBuffer[i] });
             const diff: i32 = currentBuffer[j] - currentBuffer[i];
             sequence[i] = diff;
         }
-        // for (sequence) |seq| {
-        //     std.debug.print("val {}\n", .{seq});
-        // }
         try sequences.append(sequence);
         var allZeros: bool = true;
         for (sequence) |number| {
             if (number != 0) {
                 allZeros = false;
-                // std.debug.print("fuck\n", .{});
                 break;
             }
         }
 
-        // break;
-
         if (allZeros) break;
 
-        // currentBuffer = sequences.items[sequences.items.len - 1];
         currentBuffer = sequences.getLast();
-        // std.debug.print("Current buffer now equals {any}\n", .{currentBuffer});
     }
 
     var sequenceLen: u32 = @intCast(sequences.items.len);
@@ -100,6 +91,7 @@ fn findNextSequence(buffer: []i32) !i32 {
         for (currentSequence, 0..) |seq, index| {
             newSequence[index] = seq;
         }
+        // If i defer the memory, I can't access the arrayList item.
         // defer allocator.free(newSequence);
         if (sequenceIndex == 0) {
             newSequence[currentSequence.len] = 0;
@@ -146,37 +138,27 @@ fn findPrevSequence(buffer: []i32) !i32 {
 
     while (true) {
         var sequence = try allocator.alloc(i32, currentBuffer.len - 1);
+        // If i defer the memory, I can't access the arrayList item.
         // defer allocator.free(sequence);
         var i: usize = 0;
         var j: usize = 1;
         while (j < currentBuffer.len) {
-            // std.debug.print("Current buffer length ={} and i = {} and j = {}\n", .{ currentBuffer.len, i, j });
             defer i += 1;
             defer j += 1;
-            // std.debug.print("a = {} b = {}\n", .{ currentBuffer[j], currentBuffer[i] });
             const diff: i32 = currentBuffer[j] - currentBuffer[i];
             sequence[i] = diff;
         }
-        // for (sequence) |seq| {
-        //     std.debug.print("val {}\n", .{seq});
-        // }
         try sequences.append(sequence);
         var allZeros: bool = true;
         for (sequence) |number| {
             if (number != 0) {
                 allZeros = false;
-                // std.debug.print("fuck\n", .{});
                 break;
             }
         }
 
-        // break;
-
         if (allZeros) break;
-
-        // currentBuffer = sequences.items[sequences.items.len - 1];
         currentBuffer = sequences.getLast();
-        // std.debug.print("Current buffer now equals {any}\n", .{currentBuffer});
     }
 
     var sequenceLen: u32 = @intCast(sequences.items.len);
@@ -188,6 +170,7 @@ fn findPrevSequence(buffer: []i32) !i32 {
         for (currentSequence, 1..) |seq, index| {
             newSequence[index] = seq;
         }
+        // If i defer the memory, I can't access the arrayList item.
         // defer allocator.free(newSequence);
         if (sequenceIndex == 0) {
             newSequence[0] = 0;
