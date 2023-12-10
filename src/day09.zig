@@ -43,7 +43,6 @@ pub fn solvePartOne(buffer: []const u8) !i32 {
         defer numbers.deinit();
         while (numbersSplit.next()) |numStr| {
             try numbers.append(try parseInt(i32, numStr, 10));
-            // break;
         }
         answer += try findNextSequence(numbers.items);
     }
@@ -151,16 +150,16 @@ fn findPrevSequence(buffer: []i32) !i32 {
         var i: usize = 0;
         var j: usize = 1;
         while (j < currentBuffer.len) {
-            std.debug.print("Current buffer length ={} and i = {} and j = {}\n", .{ currentBuffer.len, i, j });
+            // std.debug.print("Current buffer length ={} and i = {} and j = {}\n", .{ currentBuffer.len, i, j });
             defer i += 1;
             defer j += 1;
-            std.debug.print("a = {} b = {}\n", .{ currentBuffer[j], currentBuffer[i] });
+            // std.debug.print("a = {} b = {}\n", .{ currentBuffer[j], currentBuffer[i] });
             const diff: i32 = currentBuffer[j] - currentBuffer[i];
             sequence[i] = diff;
         }
-        for (sequence) |seq| {
-            std.debug.print("val {}\n", .{seq});
-        }
+        // for (sequence) |seq| {
+        //     std.debug.print("val {}\n", .{seq});
+        // }
         try sequences.append(sequence);
         var allZeros: bool = true;
         for (sequence) |number| {
@@ -177,7 +176,7 @@ fn findPrevSequence(buffer: []i32) !i32 {
 
         // currentBuffer = sequences.items[sequences.items.len - 1];
         currentBuffer = sequences.getLast();
-        std.debug.print("Current buffer now equals {any}\n", .{currentBuffer});
+        // std.debug.print("Current buffer now equals {any}\n", .{currentBuffer});
     }
 
     var sequenceLen: u32 = @intCast(sequences.items.len);
