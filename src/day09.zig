@@ -31,9 +31,92 @@ pub fn main() !void {
     std.debug.print("Answer to part two is {}\n", .{partTwoAnswer});
 }
 
-pub fn solvePartOne(buffer: []const u8) !u32 {
-    _ = buffer;
-    return 0;
+pub fn solvePartOne(buffer: []const u8) !i32 {
+    var lines = std.mem.splitAny(u8, buffer, "\n");
+    var lineIndex: usize = 0;
+    var allocator = std.heap.page_allocator;
+    var answer: i32 = 0;
+    while (lines.next()) |line| {
+        defer lineIndex += 1;
+        var numbersSplit = std.mem.splitAny(u8, line, " ");
+        var numbers = std.ArrayList(i32).init(allocator);
+        defer numbers.deinit();
+        while (numbersSplit.next()) |numStr| {
+            try numbers.append(try parseInt(i32, numStr, 10));
+            // break;
+        }
+        answer += try findNextSequence(numbers.items);
+    }
+    return answer;
+}
+
+fn findNextSequence(buffer: []i32) !i32 {
+    var allocator = std.heap.page_allocator;
+    var sequences = std.ArrayList([]i32).init(allocator);
+    defer sequences.deinit();
+    var currentBuffer: []i32 = buffer;
+    try sequences.append(currentBuffer);
+
+    while (true) {
+        var sequence = try allocator.alloc(i32, currentBuffer.len - 1);
+        // defer allocator.free(sequence);
+        var i: usize = 0;
+        var j: usize = 1;
+        while (j < currentBuffer.len) {
+            std.debug.print("Current buffer length ={} and i = {} and j = {}\n", .{ currentBuffer.len, i, j });
+            defer i += 1;
+            defer j += 1;
+            std.debug.print("a = {} b = {}\n", .{ currentBuffer[j], currentBuffer[i] });
+            const diff: i32 = currentBuffer[j] - currentBuffer[i];
+            sequence[i] = diff;
+        }
+        for (sequence) |seq| {
+            std.debug.print("val {}\n", .{seq});
+        }
+        try sequences.append(sequence);
+        var allZeros: bool = true;
+        for (sequence) |number| {
+            if (number != 0) {
+                allZeros = false;
+                // std.debug.print("fuck\n", .{});
+                break;
+            }
+        }
+
+        // break;
+
+        if (allZeros) break;
+
+        // currentBuffer = sequences.items[sequences.items.len - 1];
+        currentBuffer = sequences.getLast();
+        std.debug.print("Current buffer now equals {any}\n", .{currentBuffer});
+    }
+
+    var sequenceLen: u32 = @intCast(sequences.items.len);
+    var sequenceIndex: u32 = 0;
+    while (sequenceIndex < sequenceLen) : (sequenceIndex += 1) {
+        var currentSequence = sequences.items[sequences.items.len - (1 + sequenceIndex)];
+        var lengthOfCurrentSequence: u32 = @intCast(currentSequence.len);
+        var newSequence = try allocator.alloc(i32, lengthOfCurrentSequence + 1);
+        for (currentSequence, 0..) |seq, index| {
+            newSequence[index] = seq;
+        }
+        // defer allocator.free(newSequence);
+        if (sequenceIndex == 0) {
+            newSequence[currentSequence.len] = 0;
+            continue;
+        }
+
+        var sequenceBelow = sequences.items[sequences.items.len - (sequenceIndex)];
+        // we want to look BELOW to see what we should be adding...
+        const diff = sequenceBelow[sequenceBelow.len - 1];
+
+        newSequence[newSequence.len - 1] = newSequence[newSequence.len - 2] + diff;
+
+        sequences.items[sequenceLen - (1 + sequenceIndex)] = newSequence;
+    }
+
+    return sequences.items[0][sequences.items[0].len - 1];
 }
 
 pub fn solvePartTwo(buffer: []const u8) !u32 {
@@ -42,7 +125,7 @@ pub fn solvePartTwo(buffer: []const u8) !u32 {
 }
 
 test "part one should solve" {
-    try std.testing.expect(try solvePartOne(testData) == 0);
+    try std.testing.expect(try solvePartOne(testData) == 114);
 }
 
 test "part two should solve" {
