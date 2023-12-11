@@ -231,65 +231,8 @@ fn findNextMove(grid: [][]u8, pos: PipeJourney) PipeJourney {
 }
 
 pub fn solvePartTwo(buffer: []const u8) !u32 {
-    var lines = std.mem.splitAny(u8, buffer, "\n");
-    var lineCount: u32 = @intCast(std.mem.count(u8, buffer, "\n"));
-    lineCount += 1;
-    var allocator = std.heap.page_allocator;
-    var grid = try allocator.alloc([]u8, lineCount);
-    defer allocator.free(grid);
-    var lineIndex: u32 = 0;
-    var x: u32 = 0;
-    var y: u32 = 0;
-    while (lines.next()) |line| {
-        defer lineIndex += 1;
-        var gridLine = try allocator.alloc(u8, line.len);
-        // defer allocator.free(gridLine);
-        var i: u32 = 0;
-        // std.debug.print("grid line length = {}\n", .{gridLine.len});
-        while (i < line.len) : (i += 1) {
-            gridLine[i] = line[i];
-            if (gridLine[i] == 'S') {
-                x = i;
-                y = lineIndex;
-            }
-        }
-        grid[lineIndex] = gridLine;
-    }
-
-    // Check up down left and right to see where our 2 connecting points are
-
-    var connectionA: @Vector(2, u32) = .{ x, y };
-    var connectionB: @Vector(2, u32) = .{ x, y };
-
-    connectionA = findNextConnection(grid, connectionA, connectionA);
-    connectionB = findNextConnection(grid, connectionB, connectionA);
-    var journeyA = PipeJourney{ .pos = connectionA, .direction = 'W' };
-    var journeyB = PipeJourney{ .pos = connectionB, .direction = 'W' };
-
-    if (connectionA[0] > x) {
-        journeyA.direction = 'E';
-    } else if (connectionA[1] > y) {
-        journeyA.direction = 'S';
-    } else if (connectionA[1] < y) {
-        journeyA.direction = 'N';
-    }
-
-    if (connectionB[0] > x) {
-        journeyB.direction = 'E';
-    } else if (connectionB[1] > y) {
-        journeyB.direction = 'S';
-    } else if (connectionB[1] < y) {
-        journeyB.direction = 'N';
-    }
-
-    var steps: u32 = 1;
-    // TODO - add these values to a grid so we can work out if anything is surrounded
-    while (!std.meta.eql(journeyA.pos, journeyB.pos)) {
-        defer steps += 1;
-        journeyA = findNextMove(grid, journeyA);
-        journeyB = findNextMove(grid, journeyB);
-    }
-    return steps;
+    _ = buffer;
+    return 0;
 }
 
 test "part one should solve" {
