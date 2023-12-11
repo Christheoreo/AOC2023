@@ -8,9 +8,49 @@ const BitSet = std.DynamicBitSet;
 const util = @import("util.zig");
 const gpa = util.gpa;
 
-const data = @embedFile("data/day11.txt");
+const data = @embedFile("data/day10.txt");
+const testData = @embedFile("data/day10.test.txt");
+const testData2 = @embedFile("data/day10.test2.txt");
 
-pub fn main() !void {}
+const Node = struct { isGalaxy: bool, up: ?*Node, right: ?*Node, left: ?*Node, down: ?*Node };
+
+pub fn main() !void {
+    var startTimePart = std.time.nanoTimestamp();
+    var partOneAnswer = try solvePartOne(testData);
+    var elapsedTimePart: i128 = std.time.nanoTimestamp() - startTimePart;
+    const oneMil: f128 = 1_000_000;
+    var floatingPoint: f128 = @floatFromInt(elapsedTimePart);
+    var mili: f128 = floatingPoint / oneMil;
+    std.debug.print("Part 1 took: {} nanoseconds and {} miliseconds\n", .{ elapsedTimePart, mili });
+    std.debug.print("Answer to part one is {}\n", .{partOneAnswer});
+
+    startTimePart = std.time.nanoTimestamp();
+    const partTwoAnswer = try solvePartTwo(testData2);
+    elapsedTimePart = std.time.nanoTimestamp() - startTimePart;
+
+    floatingPoint = @floatFromInt(elapsedTimePart);
+    mili = floatingPoint / oneMil;
+    std.debug.print("Part 2 took: {} nanoseconds and {} miliseconds\n", .{ elapsedTimePart, mili });
+    std.debug.print("Answer to part two is {}\n", .{partTwoAnswer});
+}
+
+pub fn solvePartOne(buffer: []const u8) !u32 {
+    _ = buffer;
+    return 0;
+}
+
+pub fn solvePartTwo(buffer: []const u8) !u32 {
+    _ = buffer;
+    return 0;
+}
+
+test "part one should solve" {
+    try std.testing.expect(try solvePartOne(testData) == 0);
+}
+
+test "part two should solve" {
+    try std.testing.expect(try solvePartTwo(testData2) == 0);
+}
 
 // Useful stdlib functions
 const tokenize = std.mem.tokenize;
