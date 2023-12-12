@@ -8,9 +8,8 @@ const BitSet = std.DynamicBitSet;
 const util = @import("util.zig");
 const gpa = util.gpa;
 
-const data = @embedFile("data/day10.txt");
-const testData = @embedFile("data/day10.test.txt");
-const testData2 = @embedFile("data/day10.test2.txt");
+const data = @embedFile("data/day11.txt");
+const testData = @embedFile("data/day11.test.txt");
 
 const Node = struct { isGalaxy: bool, up: ?*Node, right: ?*Node, left: ?*Node, down: ?*Node };
 
@@ -25,7 +24,7 @@ pub fn main() !void {
     std.debug.print("Answer to part one is {}\n", .{partOneAnswer});
 
     startTimePart = std.time.nanoTimestamp();
-    const partTwoAnswer = try solvePartTwo(testData2);
+    const partTwoAnswer = try solvePartTwo(testData);
     elapsedTimePart = std.time.nanoTimestamp() - startTimePart;
 
     floatingPoint = @floatFromInt(elapsedTimePart);
@@ -35,9 +34,79 @@ pub fn main() !void {
 }
 
 pub fn solvePartOne(buffer: []const u8) !u32 {
-    _ = buffer;
-    return 0;
+    var lines = std.mem.splitAny(u8, buffer, "\n");
+    var lineIndex: usize = 0;
+    var allocator = std.heap.page_allocator;
+    var grid = std.ArrayList([]u8).init(allocator);
+    defer grid.deinit();
+    var answer: u32 = 0;
+    while (lines.next()) |line| {
+        defer lineIndex += 1;
+        var l = std.ArrayList(u8).init(allocator);
+
+        var i: usize = 0;
+        while (i < line.len) : (i += 1) {
+            try l.append(line[i]);
+        }
+        try grid.append(l.items);
+
+        if (!std.mem.containsAtLeast(u8, line, 1, "#")) {
+            try grid.append(l.items);
+        }
+    }
+
+    var colIndex: u32 = 0;
+    var columnsToAdd = std.ArrayList(u32).init(allocator);
+    while (colIndex < grid.items[0].len) : (colIndex += 1) {
+        var rowIndex: usize = 0;
+        var containsGalaxy: bool = false;
+        while (rowIndex < grid.items.len) : (rowIndex += 1) {
+            var row = grid.items[rowIndex];
+            if (row[colIndex] == '#') {
+                containsGalaxy = true;
+                break;
+            }
+        }
+        if (containsGalaxy) continue;
+        try columnsToAdd.append(colIndex);
+    }
+
+    std.debug.print("items in cols to add = {}\n", .{columnsToAdd.items.len});
+    for (columnsToAdd.items, 1..) |colItem, ii| {
+        // we have marked the column indexs - but we add new ones - so we need to get past that
+        std.debug.print("Col = {}\n", .{colItem});
+        // Add a column after this one!
+        var currentRow: usize = 0;
+        while (currentRow < grid.items.len) : (currentRow += 1) {
+            // Add an item at col + 1!
+            var newRow = try allocator.alloc(u8, grid.items[currentRow].len + 1);
+            var r = grid.items[currentRow];
+
+            var k: usize = 0;
+            newRow[colItem + ii] = '.';
+            while (k < r.len) : (k += 1) {
+                if (k <= colItem + ii) {
+                    newRow[k] = r[k];
+                } else {
+                    newRow[k + ii] = r[k];
+                }
+            }
+
+            grid.items[currentRow] = newRow;
+        }
+        // colIndex += 1;
+        // if (colIndex >= grid.items[0].len - 1) {
+        //     break;
+        // }
+    }
+
+    for (grid.items) |line| {
+        std.debug.print("{s}\n", .{line});
+    }
+    return answer;
 }
+
+// fn insertLineAfterPos(pos: u32, grid)
 
 pub fn solvePartTwo(buffer: []const u8) !u32 {
     _ = buffer;
@@ -49,7 +118,7 @@ test "part one should solve" {
 }
 
 test "part two should solve" {
-    try std.testing.expect(try solvePartTwo(testData2) == 0);
+    try std.testing.expect(try solvePartTwo(testData) == 0);
 }
 
 // Useful stdlib functions
